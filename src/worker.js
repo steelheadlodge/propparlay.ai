@@ -164,22 +164,9 @@ export default {
       const supabaseResult = await saveToSupabase(email, env);
       const isDuplicate = kvResult.duplicate || supabaseResult.duplicate;
 
-      let alreadyNotified = false;
-      if (env.WAITLIST) {
-        alreadyNotified = Boolean(await env.WAITLIST.get(`notified:${email}`));
-      }
-
-      // Send Formspree for new signups, or if we saved to KV before Formspree was wired
-      const shouldNotify = !isDuplicate || !alreadyNotified;
-
-      let formspreeOk = false;
-      if (shouldNotify) {
-        formspreeOk = await notifyViaFormspree(email, env);
-        if (formspreeOk && env.WAITLIST) {
-          await env.WAITLIST.put(`notified:${email}`, new Date().toISOString());
-        }
-        await notifyViaResend(email, env);
-      }
+      // Always notify Formspree so inbox matches what users see on the site
+      const formspreeOk = await notifyViaFormspree(email, env);
+      await notifyViaResend(email, env);
 
       if (kvResult.ok || supabaseResult.ok || formspreeOk || isDuplicate) {
         return Response.json({
@@ -201,6 +188,14 @@ export default {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
 
-    return env.ASSETS.fetch(request);
+    const response = await env.ASSETS.fetch(request);
+    const path = url.pathname;
+    if (path === "/" || path === "/index.html") {
+      const headers = new Headers(response.headers);
+      headers.set("Cache-Control", "no-cache, must-revalidate");
+      return new Response(response.body, { status: response.status, headers });
+    }
+
+    return response;
   },
 };
