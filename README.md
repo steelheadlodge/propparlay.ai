@@ -43,6 +43,15 @@ await supabase.from('waitlist').insert({ email });
 <form action="https://formspree.io/f/YOUR_ID" method="POST">
 ```
 
+## Waitlist emails
+
+Signups are stored in **Supabase** (same project as TunedTV):
+
+- **Table:** `propparlay_waitlist`
+- **View in dashboard:** [Supabase Table Editor](https://supabase.com/dashboard/project/pbjxfitpjocaooxxafri/editor) → `propparlay_waitlist`
+
+**One-time setup:** run `supabase/waitlist.sql` in the [SQL Editor](https://supabase.com/dashboard/project/pbjxfitpjocaooxxafri/sql/new) if the table does not exist yet.
+
 ## Tech Stack
 - Pure HTML/CSS/JS in `public/` (no build step)
 - Google Fonts (Inter)

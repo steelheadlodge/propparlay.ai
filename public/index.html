@@ -377,11 +377,13 @@
             >
             <button type="submit">Get Early Access</button>
         </form>
-        <p class="form-note">Join 0 others on the waitlist. No spam, ever.</p>
+        <p class="form-note" id="formNote">Join the waitlist for early access. No spam, ever.</p>
         
         <div class="success-message" id="successMessage">
             🎉 You're on the list! We'll notify you when we launch.
         </div>
+
+        <p class="form-note" id="errorMessage" style="display:none; color: #f87171;"></p>
 
         <div class="features-preview">
             <div class="feature-card">
@@ -424,32 +426,61 @@
     <script>
         const form = document.getElementById('waitlistForm');
         const successMessage = document.getElementById('successMessage');
-        const formNote = document.querySelector('.form-note');
+        const formNote = document.getElementById('formNote');
+        const errorMessage = document.getElementById('errorMessage');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        async function loadWaitlistCount() {
+            try {
+                const res = await fetch('/api/waitlist/count');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.count > 0) {
+                    formNote.textContent = `Join ${data.count} others on the waitlist. No spam, ever.`;
+                }
+            } catch {
+                // count is optional — ignore
+            }
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            
-            // For now, just show success (you can connect to a backend later)
-            // Options: Cloudflare Workers, Supabase, or simple email service
-            
-            form.style.display = 'none';
-            formNote.style.display = 'none';
-            successMessage.style.display = 'block';
-            
-            // Store in localStorage for demo purposes
-            const waitlist = JSON.parse(localStorage.getItem('waitlist') || '[]');
-            waitlist.push({ email, timestamp: new Date().toISOString() });
-            localStorage.setItem('waitlist', JSON.stringify(waitlist));
-            
-            console.log('Waitlist signup:', email);
+            errorMessage.style.display = 'none';
+            const email = document.getElementById('email').value.trim();
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Joining...';
+
+            try {
+                const res = await fetch('/api/waitlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Something went wrong. Please try again.');
+                }
+
+                form.style.display = 'none';
+                formNote.style.display = 'none';
+                successMessage.style.display = 'block';
+                if (data.duplicate) {
+                    successMessage.textContent = "🎉 You're already on the list! We'll notify you when we launch.";
+                }
+                await loadWaitlistCount();
+            } catch (err) {
+                errorMessage.textContent = err.message || 'Something went wrong. Please try again.';
+                errorMessage.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Get Early Access';
+            }
         });
 
-        // Update waitlist count from localStorage
-        const waitlist = JSON.parse(localStorage.getItem('waitlist') || '[]');
-        if (waitlist.length > 0) {
-            formNote.textContent = `Join ${waitlist.length} others on the waitlist. No spam, ever.`;
-        }
+        loadWaitlistCount();
     </script>
 </body>
 </html>
