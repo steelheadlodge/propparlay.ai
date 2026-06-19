@@ -44,7 +44,7 @@ await supabase.from('waitlist').insert({ email });
 ```
 
 ## Tech Stack
-- Pure HTML/CSS/JS (no build step)
+- Pure HTML/CSS/JS in `public/` (no build step)
 - Google Fonts (Inter)
 - Responsive design
 - Animated background effects
