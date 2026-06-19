@@ -164,9 +164,20 @@ export default {
       const supabaseResult = await saveToSupabase(email, env);
       const isDuplicate = kvResult.duplicate || supabaseResult.duplicate;
 
+      let alreadyNotified = false;
+      if (env.WAITLIST) {
+        alreadyNotified = Boolean(await env.WAITLIST.get(`notified:${email}`));
+      }
+
+      // Send Formspree for new signups, or if we saved to KV before Formspree was wired
+      const shouldNotify = !isDuplicate || !alreadyNotified;
+
       let formspreeOk = false;
-      if (!isDuplicate) {
+      if (shouldNotify) {
         formspreeOk = await notifyViaFormspree(email, env);
+        if (formspreeOk && env.WAITLIST) {
+          await env.WAITLIST.put(`notified:${email}`, new Date().toISOString());
+        }
         await notifyViaResend(email, env);
       }
 
