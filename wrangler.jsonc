@@ -6,6 +6,12 @@
   "vars": {
     "FORMSPREE_FORM_ID": "xjgdnazp"
   },
+  "kv_namespaces": [
+    {
+      "binding": "WAITLIST",
+      "id": "441284619df84269a3fa5d513c4f0e6f"
+    }
+  ],
   "assets": {
     "directory": "public",
     "binding": "ASSETS"

@@ -164,12 +164,13 @@ export default {
       const supabaseResult = await saveToSupabase(email, env);
       const isDuplicate = kvResult.duplicate || supabaseResult.duplicate;
 
+      let formspreeOk = false;
       if (!isDuplicate) {
-        await notifyViaFormspree(email, env);
+        formspreeOk = await notifyViaFormspree(email, env);
         await notifyViaResend(email, env);
       }
 
-      if (kvResult.ok || supabaseResult.ok) {
+      if (kvResult.ok || supabaseResult.ok || formspreeOk || isDuplicate) {
         return Response.json({
           ok: true,
           duplicate: isDuplicate || false,
