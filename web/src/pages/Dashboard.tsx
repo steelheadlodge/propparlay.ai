@@ -1,14 +1,18 @@
 import { useState } from "react";
 import HotZonesGrid from "../components/HotZonesGrid";
 import Layout from "../components/Layout";
+import ParlaySlip from "../components/ParlaySlip";
 import PropCard from "../components/PropCard";
 import { allMockProps } from "../data/allMockProps";
+import { selectedLegs, useParlay } from "../context/ParlayContext";
 import styles from "./Dashboard.module.css";
 
 export default function Dashboard() {
   const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
+  const { legIds } = useParlay();
 
   const sorted = [...allMockProps].sort((a, b) => b.edge - a.edge);
+  const legs = selectedLegs(legIds, allMockProps);
   const highlighted = selectedPropId
     ? sorted.find((p) => p.id === selectedPropId)
     : null;
@@ -78,8 +82,10 @@ export default function Dashboard() {
       </div>
 
       <p className={styles.footerNote}>
-        Preview — live odds API and parlay builder coming next.
+        Preview — live odds API and account access coming next.
       </p>
+
+      <ParlaySlip legs={legs} />
     </Layout>
   );
 }

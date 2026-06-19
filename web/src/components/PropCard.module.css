@@ -11,6 +11,11 @@
   box-shadow: 0 8px 32px rgba(99, 102, 241, 0.08);
 }
 
+.cardActive {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.1);
+}
+
 .top {
   display: flex;
   justify-content: space-between;
@@ -145,6 +150,45 @@
   font-weight: 600;
   color: #a5b4fc;
   text-align: right;
+}
+
+.slipBtn {
+  margin-top: 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.12);
+  color: #c7d2fe;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.slipBtn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.6);
+}
+
+.slipBtnActive {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #6ee7b7;
+}
+
+.slipBtnActive:hover {
+  background: rgba(16, 185, 129, 0.26);
+  border-color: rgba(16, 185, 129, 0.7);
+}
+
+.slipBtnOdds {
+  font-weight: 700;
+  opacity: 0.85;
 }
 
 @media (max-width: 520px) {
