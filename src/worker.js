@@ -80,9 +80,12 @@ async function saveToSupabase(email, env) {
   return { ok: false, error: body, store: "supabase" };
 }
 
-async function notifyViaFormspree(email, env) {
+async function notifyViaFormspree(email, env, { duplicate = false } = {}) {
   const formId = env.FORMSPREE_FORM_ID;
   if (!formId) return false;
+
+  const suffix = duplicate ? ` (repeat ${new Date().toISOString()})` : "";
+  const subject = `PropParlay waitlist: ${email}${suffix}`;
 
   try {
     const res = await fetch(`https://formspree.io/f/${formId}`, {
@@ -91,13 +94,17 @@ async function notifyViaFormspree(email, env) {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
+      // Avoid top-level `email` — when it matches the Formspree notification
+      // address, Formspree/Gmail often skip the inbox notification.
       body: JSON.stringify({
-        email,
         _replyto: email,
         signup_email: email,
         product: "PropParlay.ai",
-        message: `New waitlist signup: ${email}`,
-        _subject: `PropParlay waitlist: ${email}`,
+        duplicate_signup: duplicate,
+        message: duplicate
+          ? `Repeat waitlist signup: ${email}`
+          : `New waitlist signup: ${email}`,
+        _subject: subject,
       }),
     });
     if (!res.ok) {
@@ -167,7 +174,9 @@ export default {
       const isDuplicate = kvResult.duplicate || supabaseResult.duplicate;
 
       // Always notify Formspree so inbox matches what users see on the site
-      const formspreeOk = await notifyViaFormspree(email, env);
+      const formspreeOk = await notifyViaFormspree(email, env, {
+        duplicate: isDuplicate,
+      });
       await notifyViaResend(email, env);
 
       if (kvResult.ok || supabaseResult.ok || formspreeOk || isDuplicate) {
