@@ -1,30 +1,28 @@
-# PropParlay waitlist — Lovable Cloud setup
+# Waitlist — where signups go
 
-FormSubmit does **not** work from Cloudflare Workers (blocked). Use one of these:
+## Storage (working now)
 
-## Option A — KV (fastest, ~2 minutes)
+**Cloudflare KV** → `propparlay-waitlist` → **KV Pairs** tab
 
-1. Cloudflare → **Workers & Pages** → **propparlayai** → **Bindings**
-2. **Add binding** → **KV namespace** → **Create new** → name: `propparlay-waitlist`
-3. Variable name: `WAITLIST` → **Deploy**
+You already see `email:...` keys there. That is the backup record.
 
-View signups: **Storage & Databases** → **Workers KV** → `propparlay-waitlist` → keys like `email:user@example.com`
+## Inbox email (Formspree — same as Doortronix)
 
-## Option B — Lovable Cloud table (view in Lovable UI)
+FormSubmit does **not** work from Cloudflare Workers. **Formspree does.**
 
-1. Open [TunedTV Lovable project](https://lovable.dev/projects/4f9faf28-59e2-470d-bc80-dcaee350ca77)
-2. Paste in chat:
+### Setup (~3 minutes)
 
-```
-Create a new database table propparlay_waitlist for the PropParlay.ai landing page (not TunedTV UI).
-Columns: id uuid default gen_random_uuid(), email text unique not null, source text default 'landing', created_at timestamptz default now().
-Enable RLS: allow anonymous INSERT only (no public SELECT on the table).
-Add function propparlay_waitlist_count() security definer returning count for anonymous execute only.
-Publish to production.
-```
+1. [formspree.io](https://formspree.io) → **+ Add New** → new form: **PropParlay Waitlist**
+2. Open the form — copy the ID from the URL: `formspree.io/forms/**mbdbndbe**` → ID is `mbdbndbe`
+3. Cloudflare → **Workers & Pages** → **propparlayai** → **Settings** → **Variables and Secrets**
+4. **Add** → Type: **Text** (not secret required)
+   - Name: `FORMSPREE_FORM_ID`
+   - Value: your form ID (e.g. `mbdbndbe`)
+5. **Deploy** / save (redeploy Worker if prompted)
 
-3. View rows in Lovable → **Cloud** → **Database** → `propparlay_waitlist`
+New signups will:
+- Save to KV (as now)
+- Email you via Formspree (like Doortronix forms)
+- Show in Formspree dashboard under that form
 
-## Option C — Email inbox (optional)
-
-Add Resend API key as Worker secret `RESEND_API_KEY` for copies to spcecwby@gmail.com.
+Duplicate signups only update KV (no repeat emails).

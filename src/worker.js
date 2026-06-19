@@ -80,6 +80,34 @@ async function saveToSupabase(email, env) {
   return { ok: false, error: body, store: "supabase" };
 }
 
+async function notifyViaFormspree(email, env) {
+  const formId = env.FORMSPREE_FORM_ID;
+  if (!formId) return false;
+
+  try {
+    const res = await fetch(`https://formspree.io/f/${formId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        product: "PropParlay.ai",
+        message: `Waitlist signup: ${email}`,
+        _subject: "PropParlay waitlist signup",
+      }),
+    });
+    if (!res.ok) {
+      console.error("formspree failed", res.status, await res.text());
+    }
+    return res.ok;
+  } catch (err) {
+    console.error("formspree failed", err);
+    return false;
+  }
+}
+
 async function notifyViaResend(email, env) {
   if (!env.RESEND_API_KEY) return false;
 
@@ -134,12 +162,17 @@ export default {
 
       const kvResult = await saveToKv(email, env);
       const supabaseResult = await saveToSupabase(email, env);
-      await notifyViaResend(email, env);
+      const isDuplicate = kvResult.duplicate || supabaseResult.duplicate;
+
+      if (!isDuplicate) {
+        await notifyViaFormspree(email, env);
+        await notifyViaResend(email, env);
+      }
 
       if (kvResult.ok || supabaseResult.ok) {
         return Response.json({
           ok: true,
-          duplicate: kvResult.duplicate || supabaseResult.duplicate || false,
+          duplicate: isDuplicate || false,
         });
       }
 
