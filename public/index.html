@@ -424,7 +424,7 @@
     </footer>
 
     <script>
-        // v3 — KV via worker + Formspree from browser if worker didn't notify
+        // v4 — KV via worker; Formspree always from browser (same path as FIX tests)
         const FORMSPREE_FORM_ID = 'xjgdnazp';
         const FORMSPREE_SUBMITTER = 'waitlist@propparlay.ai';
 
@@ -491,11 +491,9 @@
                     throw new Error(data.error || 'Something went wrong. Please try again.');
                 }
 
-                // Worker may be stale or skip Formspree for duplicates — browser fallback
-                // matches the direct Formspree tests that already reach your inbox.
-                if (data.formspreeOk !== true) {
-                    await notifyFormspreeFromBrowser(email, Boolean(data.duplicate));
-                }
+                // Always notify from the browser — worker-side Formspree posts lack a
+                // Referer and land in Formspree spam; browser posts show in Submissions.
+                await notifyFormspreeFromBrowser(email, Boolean(data.duplicate));
 
                 form.style.display = 'none';
                 formNote.style.display = 'none';

@@ -1,7 +1,4 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-// Formspree treats top-level `email` as the submitter — never use the signup
-// address there when it matches the notification inbox (Gmail hides those).
-const FORMSPREE_SUBMITTER_EMAIL = "waitlist@propparlay.ai";
 
 // Lovable Cloud (TunedTV project) — public anon key, safe in frontend/workers with RLS
 const DEFAULT_SUPABASE_URL = "https://pbjxfitpjocaooxxafri.supabase.co";
@@ -83,42 +80,6 @@ async function saveToSupabase(email, env) {
   return { ok: false, error: body, store: "supabase" };
 }
 
-async function notifyViaFormspree(email, env, { duplicate = false } = {}) {
-  const formId = env.FORMSPREE_FORM_ID;
-  if (!formId) return false;
-
-  const suffix = duplicate ? ` (repeat ${new Date().toISOString()})` : "";
-  const subject = `PropParlay waitlist: ${email}${suffix}`;
-
-  try {
-    const res = await fetch(`https://formspree.io/f/${formId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        email: FORMSPREE_SUBMITTER_EMAIL,
-        _replyto: email,
-        signup_email: email,
-        product: "PropParlay.ai",
-        duplicate_signup: duplicate,
-        message: duplicate
-          ? `Repeat waitlist signup: ${email}`
-          : `New waitlist signup: ${email}`,
-        _subject: subject,
-      }),
-    });
-    if (!res.ok) {
-      console.error("formspree failed", res.status, await res.text());
-    }
-    return res.ok;
-  } catch (err) {
-    console.error("formspree failed", err);
-    return false;
-  }
-}
-
 async function notifyViaResend(email, env) {
   if (!env.RESEND_API_KEY) return false;
 
@@ -175,18 +136,13 @@ export default {
       const supabaseResult = await saveToSupabase(email, env);
       const isDuplicate = kvResult.duplicate || supabaseResult.duplicate;
 
-      // Always notify Formspree so inbox matches what users see on the site
-      const formspreeOk = await notifyViaFormspree(email, env, {
-        duplicate: isDuplicate,
-      });
+      // Formspree runs in the browser (see public/index.html) — server posts go to spam.
       await notifyViaResend(email, env);
 
-      if (kvResult.ok || supabaseResult.ok || formspreeOk || isDuplicate) {
+      if (kvResult.ok || supabaseResult.ok || isDuplicate) {
         return Response.json({
           ok: true,
           duplicate: isDuplicate || false,
-          formspreeOk,
-          workerVersion: "92053a9-formspree-fallback",
         });
       }
 
