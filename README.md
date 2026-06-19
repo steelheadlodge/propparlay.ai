@@ -45,17 +45,7 @@ await supabase.from('waitlist').insert({ email });
 
 ## Waitlist emails
 
-**Default (works now):** each signup emails **spcecwby@gmail.com** via FormSubmit.
-
-- First signup triggers a **one-time activation email** from FormSubmit — click the link to confirm.
-- After that, every signup lands in your inbox.
-
-**Optional database (your own Supabase, not Lovable):** create a free project at [supabase.com](https://supabase.com), run `supabase/waitlist.sql`, then add Cloudflare Worker secrets:
-
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-
-Lovable Cloud (TunedTV) is **not** in your personal Supabase account — PropParlay uses its own backend path.
+FormSubmit is blocked from Cloudflare Workers. Use **KV** (Cloudflare dashboard) or **Lovable Cloud** table — see `docs/waitlist-setup.md`.
 
 ## Tech Stack
 - Pure HTML/CSS/JS in `public/` (no build step)
