@@ -45,12 +45,17 @@ await supabase.from('waitlist').insert({ email });
 
 ## Waitlist emails
 
-Signups are stored in **Supabase** (same project as TunedTV):
+**Default (works now):** each signup emails **spcecwby@gmail.com** via FormSubmit.
 
-- **Table:** `propparlay_waitlist`
-- **View in dashboard:** [Supabase Table Editor](https://supabase.com/dashboard/project/pbjxfitpjocaooxxafri/editor) → `propparlay_waitlist`
+- First signup triggers a **one-time activation email** from FormSubmit — click the link to confirm.
+- After that, every signup lands in your inbox.
 
-**One-time setup:** run `supabase/waitlist.sql` in the [SQL Editor](https://supabase.com/dashboard/project/pbjxfitpjocaooxxafri/sql/new) if the table does not exist yet.
+**Optional database (your own Supabase, not Lovable):** create a free project at [supabase.com](https://supabase.com), run `supabase/waitlist.sql`, then add Cloudflare Worker secrets:
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+
+Lovable Cloud (TunedTV) is **not** in your personal Supabase account — PropParlay uses its own backend path.
 
 ## Tech Stack
 - Pure HTML/CSS/JS in `public/` (no build step)

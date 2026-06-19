@@ -1,30 +1,56 @@
-const SUPABASE_URL = "https://pbjxfitpjocaooxxafri.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBianhmaXRwam9jYW9veHhhZnJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTQ3MzQsImV4cCI6MjA5NDczMDczNH0.zUXgAqjWQM0x7VDGtwiVcHakceD9yjjHQgAjneavEOo";
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NOTIFY_EMAIL = "spcecwby@gmail.com";
 
-function supabaseHeaders() {
+function supabaseHeaders(anonKey) {
   return {
-    apikey: SUPABASE_ANON_KEY,
-    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    apikey: anonKey,
+    Authorization: `Bearer ${anonKey}`,
   };
 }
 
-async function getWaitlistCount() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/propparlay_waitlist_count`, {
-    headers: supabaseHeaders(),
-  });
-  if (!res.ok) return 0;
-  const count = await res.json();
-  return typeof count === "number" ? count : 0;
+async function notifyInbox(email) {
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(NOTIFY_EMAIL)}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        product: "PropParlay.ai",
+        _subject: "PropParlay waitlist signup",
+        _template: "table",
+        _captcha: "false",
+      }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error("inbox notify failed", err);
+    return false;
+  }
 }
 
-async function insertWaitlistEmail(email) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/propparlay_waitlist`, {
+async function getWaitlistCount(env) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return null;
+
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/propparlay_waitlist_count`, {
+    headers: supabaseHeaders(env.SUPABASE_ANON_KEY),
+  });
+  if (!res.ok) return null;
+  const count = await res.json();
+  return typeof count === "number" ? count : null;
+}
+
+async function insertWaitlistEmail(email, env) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
+    return { ok: false, skipped: true };
+  }
+
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/propparlay_waitlist`, {
     method: "POST",
     headers: {
-      ...supabaseHeaders(),
+      ...supabaseHeaders(env.SUPABASE_ANON_KEY),
       "Content-Type": "application/json",
       Prefer: "return=minimal",
     },
@@ -38,7 +64,7 @@ async function insertWaitlistEmail(email) {
     return { ok: true, duplicate: true };
   }
 
-  console.error("waitlist insert failed", res.status, body);
+  console.error("supabase insert failed", res.status, body);
   return { ok: false, error: body };
 }
 
@@ -47,8 +73,8 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/waitlist/count" && request.method === "GET") {
-      const count = await getWaitlistCount();
-      return Response.json({ count });
+      const count = await getWaitlistCount(env);
+      return Response.json({ count: count ?? 0 });
     }
 
     if (url.pathname === "/api/waitlist" && request.method === "POST") {
@@ -67,15 +93,20 @@ export default {
         return Response.json({ error: "Invalid email" }, { status: 400 });
       }
 
-      const result = await insertWaitlistEmail(email);
-      if (!result.ok) {
-        return Response.json(
-          { error: "Waitlist is not ready yet. Try again shortly." },
-          { status: 503 },
-        );
+      const inboxOk = await notifyInbox(email);
+      const supabaseResult = await insertWaitlistEmail(email, env);
+
+      if (supabaseResult.ok || inboxOk) {
+        return Response.json({
+          ok: true,
+          duplicate: supabaseResult.duplicate ?? false,
+        });
       }
 
-      return Response.json({ ok: true, duplicate: result.duplicate });
+      return Response.json(
+        { error: "Could not save signup. Please try again." },
+        { status: 503 },
+      );
     }
 
     if (url.pathname.startsWith("/api/")) {
