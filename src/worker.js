@@ -185,6 +185,8 @@ export default {
         return Response.json({
           ok: true,
           duplicate: isDuplicate || false,
+          formspreeOk,
+          workerVersion: "92053a9-formspree-fallback",
         });
       }
 
