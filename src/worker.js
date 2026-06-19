@@ -93,9 +93,11 @@ async function notifyViaFormspree(email, env) {
       },
       body: JSON.stringify({
         email,
+        _replyto: email,
+        signup_email: email,
         product: "PropParlay.ai",
-        message: `Waitlist signup: ${email}`,
-        _subject: "PropParlay waitlist signup",
+        message: `New waitlist signup: ${email}`,
+        _subject: `PropParlay waitlist: ${email}`,
       }),
     });
     if (!res.ok) {

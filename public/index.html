@@ -433,7 +433,7 @@
 
         async function loadWaitlistCount() {
             try {
-                const res = await fetch('/api/waitlist/count');
+                const res = await fetch(`${window.location.origin}/api/waitlist/count`);
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data.count > 0) {
@@ -453,7 +453,7 @@
             submitBtn.textContent = 'Joining...';
 
             try {
-                const res = await fetch('/api/waitlist', {
+                const res = await fetch(`${window.location.origin}/api/waitlist`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email }),
@@ -469,7 +469,11 @@
                 formNote.style.display = 'none';
                 successMessage.style.display = 'block';
                 if (data.duplicate) {
-                    successMessage.textContent = "🎉 You're already on the list! We'll notify you when we launch.";
+                    successMessage.textContent =
+                        "🎉 You're already on the list! We'll notify you when we launch.";
+                } else {
+                    successMessage.textContent =
+                        "🎉 You're on the list! We'll email you when we launch. (No confirmation email right now.)";
                 }
                 await loadWaitlistCount();
             } catch (err) {
