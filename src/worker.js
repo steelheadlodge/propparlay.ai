@@ -1,4 +1,7 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Formspree treats top-level `email` as the submitter — never use the signup
+// address there when it matches the notification inbox (Gmail hides those).
+const FORMSPREE_SUBMITTER_EMAIL = "waitlist@propparlay.ai";
 
 // Lovable Cloud (TunedTV project) — public anon key, safe in frontend/workers with RLS
 const DEFAULT_SUPABASE_URL = "https://pbjxfitpjocaooxxafri.supabase.co";
@@ -94,9 +97,8 @@ async function notifyViaFormspree(email, env, { duplicate = false } = {}) {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      // Avoid top-level `email` — when it matches the Formspree notification
-      // address, Formspree/Gmail often skip the inbox notification.
       body: JSON.stringify({
+        email: FORMSPREE_SUBMITTER_EMAIL,
         _replyto: email,
         signup_email: email,
         product: "PropParlay.ai",
