@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "propparlay-ai",
+  "compatibility_date": "2025-06-19",
+  "assets": {
+    "directory": "."
+  }
+}
