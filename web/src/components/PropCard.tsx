@@ -26,7 +26,7 @@ export default function PropCard({ prop }: { prop: PropPick }) {
       {isTopPick && <span className={styles.topTag}>🔥 Top edge</span>}
 
       <div className={styles.top}>
-        <TeamAvatar team={prop.team} />
+        <TeamAvatar team={prop.team} sport={prop.sport} />
         <div className={styles.headInfo}>
           <div className={styles.meta}>
             <span className={styles.sportChip}>

@@ -36,6 +36,24 @@ const TEAM_COLORS: Record<string, string> = {
   TOR: "#00205b",
 };
 
+// Maps our sport label to ESPN's league path used in their public CDN.
+const ESPN_LEAGUE: Record<string, string> = {
+  NBA: "nba",
+  NHL: "nhl",
+  NFL: "nfl",
+  MLB: "mlb",
+};
+
+/**
+ * ESPN's free team-logo CDN, keyed by lowercase team abbreviation.
+ * e.g. https://a.espncdn.com/i/teamlogos/nba/500/min.png
+ */
+export function espnLogoUrl(sport: string, team: string): string | null {
+  const league = ESPN_LEAGUE[sport];
+  if (!league) return null;
+  return `https://a.espncdn.com/i/teamlogos/${league}/500/${team.toLowerCase()}.png`;
+}
+
 export function teamColor(team: string): string {
   if (TEAM_COLORS[team]) return TEAM_COLORS[team];
   let hash = 0;
