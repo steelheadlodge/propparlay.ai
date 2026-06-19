@@ -1,0 +1,21 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.svg {
+  transform: rotate(-90deg);
+}
+
+.progress {
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.label {
+  position: absolute;
+  font-size: 0.85rem;
+  font-weight: 800;
+}

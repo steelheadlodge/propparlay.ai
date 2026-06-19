@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { mockHotZoneRows } from "../data/mockHotZones";
 import { SPORTS, ZONE_META, type SportKey } from "../types/hotZone";
+import SportIcon from "./SportIcon";
 import styles from "./HotZonesGrid.module.css";
 
 const SPORT_KEYS: SportKey[] = ["nba", "nhl", "nfl", "mlb"];
@@ -45,7 +46,12 @@ export default function HotZonesGrid({
             <tr>
               <th className={styles.cornerHead}>Market</th>
               {SPORTS.map((sport) => (
-                <th key={sport}>{sport}</th>
+                <th key={sport}>
+                  <span className={styles.sportHead}>
+                    <SportIcon sport={sport} size={18} />
+                    {sport}
+                  </span>
+                </th>
               ))}
             </tr>
           </thead>
