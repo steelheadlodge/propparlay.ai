@@ -3,6 +3,9 @@
   "name": "propparlayai",
   "main": "src/worker.js",
   "compatibility_date": "2025-06-19",
+  "vars": {
+    "FORMSPREE_FORM_ID": "xjgdnazp"
+  },
   "assets": {
     "directory": "public",
     "binding": "ASSETS"
