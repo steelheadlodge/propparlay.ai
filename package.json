@@ -2,7 +2,12 @@
   "name": "propparlay",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy"
+    "dev": "npm run dev:web",
+    "dev:web": "cd web && npm run dev",
+    "dev:worker": "wrangler dev",
+    "build": "npm run build:web",
+    "build:web": "cd web && npm install && npm run build",
+    "deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "^4.103.0"

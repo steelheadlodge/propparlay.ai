@@ -159,6 +159,17 @@ export default {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
 
+    // SPA fallback for React app at /app/*
+    if (url.pathname.startsWith("/app")) {
+      let response = await env.ASSETS.fetch(request);
+      if (response.status === 404) {
+        const indexUrl = new URL(request.url);
+        indexUrl.pathname = "/app/index.html";
+        response = await env.ASSETS.fetch(new Request(indexUrl, request));
+      }
+      return response;
+    }
+
     const response = await env.ASSETS.fetch(request);
     const path = url.pathname;
     if (path === "/" || path === "/index.html") {

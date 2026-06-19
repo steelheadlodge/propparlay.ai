@@ -1,0 +1,88 @@
+import type { PropPick } from "../types/prop";
+
+export const mockProps: PropPick[] = [
+  {
+    id: "1",
+    player: "Anthony Edwards",
+    team: "MIN",
+    opponent: "DEN",
+    sport: "NBA",
+    market: "Points",
+    gameTime: "Tonight · 7:00 PM ET",
+    aiProjection: 28.4,
+    unit: "pts",
+    confidence: 82,
+    edge: 6.2,
+    recommendation: "over",
+    books: [
+      { book: "DraftKings", line: "O 26.5", odds: -115 },
+      { book: "FanDuel", line: "O 26.5", odds: -108 },
+      { book: "BetMGM", line: "O 27.0", odds: -105 },
+    ],
+    summary:
+      "Edwards faces a Denver defense allowing the 4th-most points to opposing wings over the last 10 games.",
+  },
+  {
+    id: "2",
+    player: "Tyreek Hill",
+    team: "MIA",
+    opponent: "BUF",
+    sport: "NFL",
+    market: "Receiving Yards",
+    gameTime: "Sun · 4:25 PM ET",
+    aiProjection: 78.6,
+    unit: "yds",
+    confidence: 74,
+    edge: 4.8,
+    recommendation: "over",
+    books: [
+      { book: "DraftKings", line: "O 72.5", odds: -110 },
+      { book: "Caesars", line: "O 73.5", odds: -112 },
+      { book: "FanDuel", line: "O 74.5", odds: -108 },
+    ],
+    summary:
+      "Buffalo's secondary has allowed 7.8 yards per target to wide receivers in their last four games.",
+  },
+  {
+    id: "3",
+    player: "Nikola Jokic",
+    team: "DEN",
+    opponent: "MIN",
+    sport: "NBA",
+    market: "Assists",
+    gameTime: "Tonight · 7:00 PM ET",
+    aiProjection: 8.1,
+    unit: "ast",
+    confidence: 71,
+    edge: 3.4,
+    recommendation: "under",
+    books: [
+      { book: "BetMGM", line: "U 9.5", odds: -105 },
+      { book: "DraftKings", line: "U 9.5", odds: -112 },
+      { book: "FanDuel", line: "U 9.0", odds: -118 },
+    ],
+    summary:
+      "Minnesota limits assist opportunities to primary playmakers — Jokic's assist rate drops 12% vs top-10 defenses.",
+  },
+  {
+    id: "4",
+    player: "Shohei Ohtani",
+    team: "LAD",
+    opponent: "SD",
+    sport: "MLB",
+    market: "Total Bases",
+    gameTime: "Tonight · 9:40 PM ET",
+    aiProjection: 1.85,
+    unit: "bases",
+    confidence: 68,
+    edge: 5.1,
+    recommendation: "over",
+    books: [
+      { book: "FanDuel", line: "O 1.5", odds: +105 },
+      { book: "DraftKings", line: "O 1.5", odds: -102 },
+      { book: "BetMGM", line: "O 1.5", odds: +100 },
+    ],
+    summary:
+      "Ohtani is 12-for-28 with 4 multi-base hits in his last 8 starts against right-handed pitching.",
+  },
+];
