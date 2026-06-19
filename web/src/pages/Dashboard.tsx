@@ -1,16 +1,47 @@
+import { useState } from "react";
+import HotZonesGrid from "../components/HotZonesGrid";
 import Layout from "../components/Layout";
 import PropCard from "../components/PropCard";
-import { mockProps } from "../data/mockProps";
+import { allMockProps } from "../data/allMockProps";
 import styles from "./Dashboard.module.css";
 
 export default function Dashboard() {
-  const sorted = [...mockProps].sort((a, b) => b.edge - a.edge);
+  const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
+
+  const sorted = [...allMockProps].sort((a, b) => b.edge - a.edge);
+  const highlighted = selectedPropId
+    ? sorted.find((p) => p.id === selectedPropId)
+    : null;
 
   return (
     <Layout
-      title="Today's prop edges"
-      subtitle="AI projections vs market lines — mock data for preview. Real odds API coming next."
+      title="Tonight's slate"
+      subtitle="Hot zones across NBA, NHL, NFL & MLB — click a green cell to jump to the full pick."
     >
+      <HotZonesGrid
+        selectedPropId={selectedPropId}
+        onSelectProp={(id) => {
+          setSelectedPropId(id);
+          const el = document.getElementById(`prop-${id}`);
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
+
+      {highlighted && (
+        <p className={styles.highlightNote}>
+          Selected from grid: <strong>{highlighted.player}</strong>
+          <button
+            type="button"
+            className={styles.clearBtn}
+            onClick={() => setSelectedPropId(null)}
+          >
+            Clear
+          </button>
+        </p>
+      )}
+
+      <h2 className={styles.sectionTitle}>Full pick cards</h2>
+
       <div className={styles.stats}>
         <div className={styles.stat}>
           <span className={styles.statValue}>{sorted.length}</span>
@@ -34,13 +65,20 @@ export default function Dashboard() {
 
       <div className={styles.grid}>
         {sorted.map((prop) => (
-          <PropCard key={prop.id} prop={prop} />
+          <div
+            key={prop.id}
+            id={`prop-${prop.id}`}
+            className={
+              selectedPropId === prop.id ? styles.propHighlight : undefined
+            }
+          >
+            <PropCard prop={prop} />
+          </div>
         ))}
       </div>
 
       <p className={styles.footerNote}>
-        Preview build — parlay builder, live odds, and account access ship in
-        the next iteration.
+        Preview — live odds API and parlay builder coming next.
       </p>
     </Layout>
   );
