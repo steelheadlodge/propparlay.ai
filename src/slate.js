@@ -9,10 +9,14 @@ import { getGameOdds, getPlayerProps, getOddsQuota, SPORT_KEYS } from "./odds.js
 // Cap on games we fetch player props for per slate build. Each game costs
 // ~3 Odds API credits (one per market), so 6 games ≈ 18 credits per cold build.
 const MAX_EVENTS = 6;
-// Final number of cards surfaced, ranked by edge.
+// Final number of cards surfaced, ranked by confidence.
 const MAX_CARDS = 15;
-// Minimum edge (in %) over fair value for a prop to be shown.
-const MIN_EDGE = -1.5;
+// Confidence band (de-vigged consensus %). Skip near-coinflips and near-locks
+// so the slate shows meaningful, parlay-worthy reads rather than chalk or noise.
+const MIN_CONFIDENCE = 55;
+const MAX_CONFIDENCE = 93;
+// Show the value badge only when a book genuinely beats the consensus.
+const VALUE_EDGE = 0.75;
 
 const ESPN_PATH = {
   NBA: "basketball/nba",
@@ -150,8 +154,11 @@ function bucketProps(rows) {
   return [...buckets.values()];
 }
 
-// Consensus (de-vigged) fair probability for Over, averaged across books that
-// quote both sides; plus the best available price per side.
+// De-vigged market consensus for a bucket. We recommend the side the market
+// favors (higher fair probability) and report that probability as confidence.
+// `edge` is the true line-shopping value: the EV of the best available price
+// evaluated at the consensus fair probability (positive = a book is paying
+// more than the market thinks the outcome is worth).
 function analyzeBucket(b) {
   if (b.over.length === 0 || b.under.length === 0) return null;
   const overByBook = new Map(b.over.map((o) => [o.book, o.price]));
@@ -169,18 +176,17 @@ function analyzeBucket(b) {
   const fairOver = fairOvers.reduce((a, c) => a + c, 0) / fairOvers.length;
   const fairUnder = 1 - fairOver;
 
-  const bestOver = b.over.reduce((m, o) => (o.price > m.price ? o : m));
-  const bestUnder = b.under.reduce((m, u) => (u.price > m.price ? u : m));
+  const overFavored = fairOver >= fairUnder;
+  const fair = overFavored ? fairOver : fairUnder;
+  const prices = overFavored ? b.over : b.under;
+  const best = prices.reduce((m, p) => (p.price > m.price ? p : m));
+  const edge = (americanToDecimal(best.price) * fair - 1) * 100;
 
-  const edgeOver = (americanToDecimal(bestOver.price) * fairOver - 1) * 100;
-  const edgeUnder = (americanToDecimal(bestUnder.price) * fairUnder - 1) * 100;
-
-  const overWins = edgeOver >= edgeUnder;
   return {
-    side: overWins ? "over" : "under",
-    edge: overWins ? edgeOver : edgeUnder,
-    confidence: (overWins ? fairOver : fairUnder) * 100,
-    prices: overWins ? b.over : b.under,
+    side: overFavored ? "over" : "under",
+    confidence: fair * 100,
+    edge,
+    prices,
   };
 }
 
@@ -229,7 +235,8 @@ async function buildEventCards(env, event) {
   const cards = [];
   for (const b of bucketProps(rows)) {
     const a = analyzeBucket(b);
-    if (!a || a.edge < MIN_EDGE) continue;
+    if (!a) continue;
+    if (a.confidence < MIN_CONFIDENCE || a.confidence > MAX_CONFIDENCE) continue;
     const meta = MARKET_META[b.market] ?? { label: b.market, unit: "", zone: "volume" };
 
     const nm = normName(b.player);
@@ -284,7 +291,10 @@ async function buildEventCards(env, event) {
       edge: Math.round(a.edge * 10) / 10,
       recommendation: a.side,
       books,
-      summary: `Best price ${best.price > 0 ? "+" : ""}${best.price} at ${best.book} vs a market consensus of ${Math.round(a.confidence)}% — a ${a.edge >= 0 ? "+" : ""}${(Math.round(a.edge * 10) / 10).toFixed(1)}% edge over fair value.`,
+      summary:
+        a.edge >= VALUE_EDGE
+          ? `Market consensus ${Math.round(a.confidence)}% on the ${a.side}. Best price ${best.price > 0 ? "+" : ""}${best.price} at ${best.book} pays ${(Math.round(a.edge * 10) / 10).toFixed(1)}% over fair value.`
+          : `De-vigged market consensus puts the ${a.side} ${b.line} at ${Math.round(a.confidence)}%. Best available price ${best.price > 0 ? "+" : ""}${best.price} at ${best.book}.`,
     });
   }
   return cards;
@@ -303,11 +313,19 @@ export async function buildSlate(env) {
   for (const r of settled) {
     if (r.status === "fulfilled") all.push(...r.value);
   }
-  all.sort((a, b) => b.edge - a.edge);
+
+  // One card per player — keep their highest-confidence market.
+  const byPlayer = new Map();
+  for (const c of all) {
+    const key = c.player.toLowerCase();
+    const prev = byPlayer.get(key);
+    if (!prev || c.confidence > prev.confidence) byPlayer.set(key, c);
+  }
+  const deduped = [...byPlayer.values()].sort((a, b) => b.confidence - a.confidence);
 
   return {
     configured: true,
-    props: all.slice(0, MAX_CARDS),
+    props: deduped.slice(0, MAX_CARDS),
     quota: getOddsQuota(),
     events: events.length,
   };

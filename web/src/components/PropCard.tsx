@@ -45,7 +45,7 @@ export default function PropCard({ prop }: { prop: PropPick }) {
             {prop.team} vs {prop.opponent} · {prop.market}
           </p>
         </div>
-        <EdgeBadge edge={prop.edge} />
+        {prop.edge >= 1 && <EdgeBadge edge={prop.edge} />}
       </div>
 
       <div className={styles.projection}>
