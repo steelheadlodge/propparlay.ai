@@ -3,6 +3,7 @@
 
 export const ESPN_PATH = {
   NBA: "basketball/nba",
+  WNBA: "basketball/wnba",
   NHL: "hockey/nhl",
   NFL: "football/nfl",
   MLB: "baseball/mlb",
@@ -12,13 +13,22 @@ export const ESPN_PATH = {
   "World Cup": "soccer/fifa.world",
   UCL: "soccer/uefa.champions",
   Europa: "soccer/uefa.europa",
+  Conference: "soccer/uefa.europa.conf",
   Euros: "soccer/uefa.euro",
   EPL: "soccer/eng.1",
+  Championship: "soccer/eng.2",
   "La Liga": "soccer/esp.1",
   "Serie A": "soccer/ita.1",
   Bundesliga: "soccer/ger.1",
   "Ligue 1": "soccer/fra.1",
   MLS: "soccer/usa.1",
+  "Liga MX": "soccer/mex.1",
+  Eredivisie: "soccer/ned.1",
+  "Primeira Liga": "soccer/por.1",
+  "Brazil Série A": "soccer/bra.1",
+  "Saudi Pro League": "soccer/ksa.1",
+  "Scottish Prem": "soccer/sco.1",
+  Libertadores: "soccer/conmebol.libertadores",
 };
 
 export function normName(s) {

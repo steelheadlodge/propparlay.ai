@@ -11,28 +11,43 @@ import { normName, getLeagueTeams } from "./espn-teams.js";
 
 // Map an Odds API sport key prefix to our league label. Order matters: more
 // specific soccer prefixes are matched before any generic ones.
+// Order matters: more specific prefixes must come before any that they share a
+// stem with (e.g. the Europa Conference League must be matched before the plain
+// Europa League, and NCAAB before NBA is moot but NCAAF before NFL is not since
+// they don't share a stem — americanfootball_ncaaf vs americanfootball_nfl).
 const LEAGUE_BY_PREFIX = [
   ["americanfootball_nfl", "NFL"],
   ["americanfootball_ncaaf", "NCAAF"],
   ["baseball_mlb", "MLB"],
+  ["basketball_wnba", "WNBA"],
   ["basketball_nba", "NBA"],
   ["basketball_ncaab", "NCAAB"],
   ["icehockey_nhl", "NHL"],
   ["soccer_fifa_world_cup", "World Cup"],
   ["soccer_uefa_champs_league", "UCL"],
+  ["soccer_uefa_europa_conference_league", "Conference"],
   ["soccer_uefa_europa", "Europa"],
   ["soccer_uefa_european_championship", "Euros"],
   ["soccer_epl", "EPL"],
+  ["soccer_efl_champ", "Championship"],
   ["soccer_spain_la_liga", "La Liga"],
   ["soccer_italy_serie_a", "Serie A"],
   ["soccer_germany_bundesliga", "Bundesliga"],
   ["soccer_france_ligue_one", "Ligue 1"],
   ["soccer_usa_mls", "MLS"],
+  ["soccer_mexico_ligamx", "Liga MX"],
+  ["soccer_netherlands_eredivisie", "Eredivisie"],
+  ["soccer_portugal_primeira_liga", "Primeira Liga"],
+  ["soccer_brazil_campeonato", "Brazil Série A"],
+  ["soccer_saudi_arabia_pro_league", "Saudi Pro League"],
+  ["soccer_spl", "Scottish Prem"],
+  ["soccer_conmebol_copa_libertadores", "Libertadores"],
 ];
 
 // Safety cap on markets fetched per build to protect the request quota.
-// Each market costs 1 Odds API credit; the route caches for many hours.
-const MAX_MARKETS = 14;
+// Each market costs 1 Odds API credit; the route is KV-cached ~24h (one global
+// refresh/day), so this is roughly the max credits/day the board can spend.
+const MAX_MARKETS = 26;
 // Cap outright fields so payloads stay sane on huge markets (e.g. 48-nation
 // World Cup, full MVP races) while still showing the entire realistic field.
 const MAX_OUTCOMES = 64;
@@ -206,15 +221,25 @@ export async function getFutures(env) {
     NFL: 4,
     NCAAF: 5,
     NCAAB: 6,
-    UCL: 7,
-    EPL: 8,
-    "La Liga": 9,
-    "Serie A": 10,
-    Bundesliga: 11,
-    "Ligue 1": 12,
-    Europa: 13,
-    Euros: 14,
-    MLS: 15,
+    WNBA: 7,
+    UCL: 8,
+    EPL: 9,
+    "La Liga": 10,
+    "Serie A": 11,
+    Bundesliga: 12,
+    "Ligue 1": 13,
+    Europa: 14,
+    Conference: 15,
+    Euros: 16,
+    MLS: 17,
+    "Liga MX": 18,
+    Eredivisie: 19,
+    "Primeira Liga": 20,
+    "Brazil Série A": 21,
+    "Saudi Pro League": 22,
+    "Scottish Prem": 23,
+    Championship: 24,
+    Libertadores: 25,
   };
   catalog.sort(
     (a, b) =>

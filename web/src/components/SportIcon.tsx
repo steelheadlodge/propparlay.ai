@@ -38,6 +38,7 @@ export default function SportIcon({
   switch (sport) {
     case "NBA":
     case "NCAAB":
+    case "WNBA":
       return (
         <svg {...common}>
           <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.8" />

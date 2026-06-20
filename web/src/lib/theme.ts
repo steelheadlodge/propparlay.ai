@@ -21,19 +21,38 @@ export const SPORT_THEME: Record<string, SportTheme> = {
   Bundesliga: { color: "#f43f5e", glow: "rgba(244, 63, 94, 0.35)", label: "Bundesliga" },
   "Ligue 1": { color: "#14b8a6", glow: "rgba(20, 184, 166, 0.35)", label: "Ligue 1" },
   MLS: { color: "#10b981", glow: "rgba(16, 185, 129, 0.35)", label: "MLS" },
+  WNBA: { color: "#ec4899", glow: "rgba(236, 72, 153, 0.35)", label: "WNBA" },
+  Conference: { color: "#65a30d", glow: "rgba(101, 163, 13, 0.35)", label: "Conference" },
+  Championship: { color: "#7c3aed", glow: "rgba(124, 58, 237, 0.35)", label: "Championship" },
+  "Liga MX": { color: "#16a34a", glow: "rgba(22, 163, 74, 0.35)", label: "Liga MX" },
+  Eredivisie: { color: "#f97316", glow: "rgba(249, 115, 22, 0.35)", label: "Eredivisie" },
+  "Primeira Liga": { color: "#dc2626", glow: "rgba(220, 38, 38, 0.35)", label: "Primeira Liga" },
+  "Brazil Série A": { color: "#facc15", glow: "rgba(250, 204, 21, 0.35)", label: "Brazil Série A" },
+  "Saudi Pro League": { color: "#15803d", glow: "rgba(21, 128, 61, 0.35)", label: "Saudi Pro League" },
+  "Scottish Prem": { color: "#1d4ed8", glow: "rgba(29, 78, 216, 0.35)", label: "Scottish Prem" },
+  Libertadores: { color: "#f59e0b", glow: "rgba(245, 158, 11, 0.35)", label: "Libertadores" },
 };
 
 const SOCCER_LEAGUES = new Set([
   "World Cup",
   "UCL",
   "Europa",
+  "Conference",
   "Euros",
   "EPL",
+  "Championship",
   "La Liga",
   "Serie A",
   "Bundesliga",
   "Ligue 1",
   "MLS",
+  "Liga MX",
+  "Eredivisie",
+  "Primeira Liga",
+  "Brazil Série A",
+  "Saudi Pro League",
+  "Scottish Prem",
+  "Libertadores",
 ]);
 
 export function isSoccer(sport: string): boolean {
