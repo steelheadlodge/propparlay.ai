@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import GamesBoard from "../components/GamesBoard";
 import HotZonesGrid from "../components/HotZonesGrid";
 import Layout from "../components/Layout";
 import ParlaySlip from "../components/ParlaySlip";
@@ -6,6 +7,7 @@ import PropCard from "../components/PropCard";
 import SportIcon from "../components/SportIcon";
 import { allMockProps } from "../data/allMockProps";
 import { selectedLegs, useParlay } from "../context/ParlayContext";
+import { useOdds } from "../hooks/useOdds";
 import { sportTheme } from "../lib/theme";
 import styles from "./Dashboard.module.css";
 
@@ -16,6 +18,7 @@ export default function Dashboard() {
   const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("ALL");
   const { legIds } = useParlay();
+  const odds = useOdds();
 
   const sorted = useMemo(
     () => [...allMockProps].sort((a, b) => b.edge - a.edge),
@@ -62,6 +65,8 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <GamesBoard />
+
       <HotZonesGrid
         selectedPropId={selectedPropId}
         onSelectProp={(id) => {
@@ -72,7 +77,22 @@ export default function Dashboard() {
       />
 
       <div className={styles.pickHeader}>
-        <h2 className={styles.sectionTitle}>Full pick cards</h2>
+        <div className={styles.pickTitleRow}>
+          <h2 className={styles.sectionTitle}>Full pick cards</h2>
+          {odds.status === "ready" && (
+            <span
+              className={`${styles.oddsBadge} ${odds.configured ? styles.oddsLive : styles.oddsModel}`}
+              title={
+                odds.configured
+                  ? "Live odds from The Odds API"
+                  : "Model projections — add ODDS_API_KEY for live lines"
+              }
+            >
+              <span className={styles.oddsDot} />
+              {odds.configured ? "Live odds" : "Model preview"}
+            </span>
+          )}
+        </div>
         <div className={styles.filters}>
           {FILTERS.map((f) => {
             const active = filter === f;

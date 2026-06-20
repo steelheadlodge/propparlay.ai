@@ -1,4 +1,36 @@
+import { getGames } from "./espn.js";
+import { getGameOdds, getPlayerProps, SPORT_KEYS } from "./odds.js";
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Edge-cached JSON via the Cloudflare Cache API. Falls back to producing fresh
+// data on a cache miss and stores it with the given TTL.
+async function cachedJson(cacheKey, ttlSeconds, producer) {
+  const cache = caches.default;
+  const req = new Request(`https://cache.propparlay.ai/${cacheKey}`);
+  const hit = await cache.match(req);
+  if (hit) return await hit.json();
+
+  const data = await producer();
+  const res = new Response(JSON.stringify(data), {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": `max-age=${ttlSeconds}`,
+    },
+  });
+  await cache.put(req, res.clone());
+  return data;
+}
+
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=30",
+    },
+  });
+}
 
 // Lovable Cloud (TunedTV project) — public anon key, safe in frontend/workers with RLS
 const DEFAULT_SUPABASE_URL = "https://pbjxfitpjocaooxxafri.supabase.co";
@@ -153,6 +185,50 @@ export default {
         },
         { status: 503 },
       );
+    }
+
+    // Live games from ESPN (no API key needed), edge-cached 60s.
+    if (url.pathname === "/api/games" && request.method === "GET") {
+      try {
+        const data = await cachedJson("games:v1", 60, () => getGames());
+        return jsonResponse(data);
+      } catch (err) {
+        console.error("games failed", err);
+        return jsonResponse({ games: [], error: "ESPN unavailable" }, 502);
+      }
+    }
+
+    // Game-level odds from The Odds API (key-gated), edge-cached 120s.
+    if (url.pathname === "/api/odds" && request.method === "GET") {
+      try {
+        const data = await cachedJson("odds:games:v1", 120, () =>
+          getGameOdds(env),
+        );
+        return jsonResponse(data);
+      } catch (err) {
+        console.error("odds failed", err);
+        return jsonResponse({ configured: true, events: [], error: "Odds unavailable" }, 502);
+      }
+    }
+
+    // Player props for one event (on demand). /api/props?sport=baseball_mlb&eventId=...
+    if (url.pathname === "/api/props" && request.method === "GET") {
+      const sport = url.searchParams.get("sport") || "";
+      const eventId = url.searchParams.get("eventId") || "";
+      if (!Object.values(SPORT_KEYS).includes(sport) || !eventId) {
+        return jsonResponse({ error: "Invalid sport or eventId" }, 400);
+      }
+      try {
+        const data = await cachedJson(
+          `props:${sport}:${eventId}:v1`,
+          120,
+          () => getPlayerProps(env, sport, eventId),
+        );
+        return jsonResponse(data);
+      } catch (err) {
+        console.error("props failed", err);
+        return jsonResponse({ configured: true, props: [], error: "Props unavailable" }, 502);
+      }
     }
 
     if (url.pathname.startsWith("/api/")) {

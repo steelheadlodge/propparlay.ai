@@ -54,15 +54,29 @@ Pushing to `main` triggers Cloudflare's git build, which runs `wrangler deploy`.
   reach the inbox reliably (server-side posts land in Formspree spam).
 - See `docs/waitlist-setup.md` for setup details.
 
+## Live data
+
+- **Games (live):** ESPN public scoreboard via `GET /api/games` (no key). Powers the
+  "Tonight's games" board with real logos, scores, and live status.
+- **Odds:** The Odds API via `GET /api/odds` / `GET /api/props`, key-gated by the
+  `ODDS_API_KEY` Worker secret. Until a key is set the app shows a **Model preview**
+  badge; once set it flips to **Live odds**.
+- Keys stay server-side in the Worker; all responses are edge-cached.
+- See `docs/data-setup.md` for setup and endpoint details.
+
 ## Tech stack
 
 - **Frontend app:** React 19, React Router, Vite, TypeScript, CSS Modules
-- **Edge runtime:** Cloudflare Workers + Workers KV
+- **Edge runtime:** Cloudflare Workers + Workers KV + Cache API
+- **Live data:** ESPN scoreboard (games), The Odds API (lines)
 - **Landing:** static HTML/CSS/JS (no build step)
 
 ## Roadmap
 
-- [ ] Live odds API (replace mock data in `web/src/data/`)
+- [x] Live games + logos from ESPN
+- [x] Odds API proxy (key-gated, edge-cached)
+- [ ] Build prop cards from live player-prop odds (wire `/api/props` into the UI)
+- [ ] Player headshots on prop cards via ESPN athlete lookup
 - [ ] Account access gated by waitlist approval
 - [ ] Correlation-aware parlay suggestions
 - [ ] Historical results / model accuracy tracking
