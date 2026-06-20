@@ -375,6 +375,129 @@
             }
         }
     </style>
+    <style>
+        /* Two-column hero (Option B — live grid) */
+        .hero-split {
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            text-align: left;
+            gap: 4rem;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .hero-copy { flex: 1 1 440px; max-width: 580px; }
+        .hero-copy .badge { margin-bottom: 1.5rem; }
+        .hero-copy .waitlist-form { margin-left: 0; }
+        .hero-eyebrow {
+            display: inline-block;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+        .hero-visual { flex: 0 0 auto; display: flex; justify-content: center; }
+        .hero-extra {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 2rem 5rem;
+        }
+
+        /* Live grid */
+        .livegrid-card {
+            width: 380px;
+            max-width: 100%;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(99, 102, 241, 0.18);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow:
+                0 40px 100px rgba(0, 0, 0, 0.5),
+                0 0 80px rgba(139, 92, 246, 0.22);
+        }
+        .livegrid-legend {
+            font-size: 0.74rem;
+            color: var(--gray);
+            line-height: 1.45;
+            margin-bottom: 0.75rem;
+        }
+        .livegrid-legend strong { color: #34d399; }
+        .lg {
+            display: grid;
+            grid-template-columns: 74px repeat(4, 1fr);
+            gap: 4px;
+        }
+        .lg-corner {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+            padding: 4px 6px;
+            font-size: 0.58rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .lg-corner .cy { color: #a5b4fc; }
+        .lg-corner .cx { color: #6ee7b7; }
+        .lg-col, .lg-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 8px;
+            padding: 6px 4px;
+            cursor: pointer;
+            transition: background 0.12s, color 0.12s;
+            user-select: none;
+        }
+        .lg-row { justify-content: flex-start; padding-left: 8px; }
+        .lg-flag { font-size: 0.92rem; line-height: 1; }
+        .lg-cell {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            padding: 9px 2px;
+            cursor: pointer;
+            background: var(--heat);
+            transition: transform 0.08s, box-shadow 0.12s;
+        }
+        .lg-cell .odds { font-size: 0.68rem; font-weight: 800; color: #f8fafc; }
+        .lg-cell .pay { font-size: 0.54rem; color: #cbd5e1; margin-top: 1px; }
+        .lg-cell .hot { position: absolute; top: 2px; right: 4px; font-size: 0.62rem; }
+        .lg-cell.hi { box-shadow: inset 0 0 0 1px rgba(165, 180, 252, 0.7); }
+        .lg-cell.sel { box-shadow: inset 0 0 0 2px #a78bfa; transform: scale(1.05); z-index: 2; }
+        .lg-col.hi, .lg-row.hi { color: #fff; background: rgba(99, 102, 241, 0.32); }
+        .lg-readout {
+            margin-top: 0.8rem;
+            font-size: 0.74rem;
+            color: #cbd5e1;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 10px;
+            padding: 0.65rem 0.7rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .lg-readout b { color: #f8fafc; }
+        .lg-readout .am { color: #a78bfa; font-weight: 800; }
+        @media (max-width: 900px) {
+            .hero-split { flex-direction: column; text-align: center; gap: 2.5rem; }
+            .hero-copy .waitlist-form { margin-left: auto; margin-right: auto; }
+            .hero-copy .badge { margin-left: auto; margin-right: auto; }
+            .hero-visual { order: -1; }
+        }
+    </style>
 </head>
 <body>
     <div class="bg-grid"></div>
@@ -397,38 +520,57 @@
         </div>
     </nav>
 
-    <section class="hero">
-        <div class="badge">Coming Soon - Early Access Available</div>
-        
-        <h1>
-            The futures of<br>
-            <span class="gradient">parlays.</span>
-        </h1>
-        
-        <p class="subtitle">
-            The first parlay app built around futures — stack cross-sport title bets
-            (World Series, Super Bowl, Stanley Cup) at each team's real win chance. Plus
-            nightly AI prop picks and real-time line shopping. Stop guessing. Start winning.
-        </p>
+    <section class="hero hero-split">
+        <div class="hero-copy">
+            <div class="badge">Coming Soon - Early Access Available</div>
 
-        <form class="waitlist-form" id="waitlistForm">
-            <input 
-                type="email" 
-                id="email" 
-                placeholder="Enter your email" 
-                required
-                autocomplete="email"
-            >
-            <button type="submit">Get Early Access</button>
-        </form>
-        <p class="form-note" id="formNote">Join the waitlist for early access. No spam, ever.</p>
-        
-        <div class="success-message" id="successMessage">
-            🎉 You're on the list! We'll notify you when we launch.
+            <h1>
+                <span class="hero-eyebrow">Cross-sport &middot; futures</span><br>
+                Futures as a<br>
+                <span class="gradient">heat map.</span>
+            </h1>
+
+            <p class="subtitle">
+                Pick a team down the side and one across the top — the cell where they
+                meet shows your cross-sport parlay's real odds and win chance.
+                <strong style="color:#a5b4fc;">Greener cells are likelier to hit.</strong>
+                Plus nightly AI prop picks and real-time line shopping.
+            </p>
+
+            <form class="waitlist-form" id="waitlistForm">
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                    autocomplete="email"
+                >
+                <button type="submit">Get Early Access</button>
+            </form>
+            <p class="form-note" id="formNote">Join the waitlist for early access. No spam, ever.</p>
+
+            <div class="success-message" id="successMessage">
+                🎉 You're on the list! We'll notify you when we launch.
+            </div>
+
+            <p class="form-note" id="errorMessage" style="display:none; color: #f87171;"></p>
         </div>
 
-        <p class="form-note" id="errorMessage" style="display:none; color: #f87171;"></p>
+        <div class="hero-visual">
+            <div class="livegrid-card">
+                <p class="livegrid-legend">
+                    Greener cells are <strong>more likely to hit</strong>. Hover a cell —
+                    or tap one — to lock a combo. 🔥 marks the safest pairing.
+                </p>
+                <div class="lg" id="livegrid"></div>
+                <div class="lg-readout" id="lgReadout">
+                    Hover any cell to see the combined parlay odds.
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <section class="hero-extra">
         <div class="features-preview">
             <div class="feature-card">
                 <div class="feature-icon">🎯</div>
@@ -560,6 +702,112 @@
         });
 
         loadWaitlistCount();
+    </script>
+
+    <script>
+        // Live cross-sport heat-map grid (demo data; mirrors the in-app math).
+        const DOWN = [
+            { flag: '🇫🇷', name: 'France', pct: 19 },
+            { flag: '🇪🇸', name: 'Spain', pct: 15 },
+            { flag: '🏴', name: 'England', pct: 13 },
+            { flag: '🇧🇷', name: 'Brazil', pct: 12 },
+            { flag: '🇦🇷', name: 'Argentina', pct: 11 },
+            { flag: '🇵🇹', name: 'Portugal', pct: 8 },
+        ];
+        const ACROSS = [
+            { abbr: 'LAD', name: 'Dodgers', pct: 20 },
+            { abbr: 'NYY', name: 'Yankees', pct: 13 },
+            { abbr: 'ATL', name: 'Braves', pct: 10 },
+            { abbr: 'PHI', name: 'Phillies', pct: 8 },
+        ];
+
+        const americanFromProb = (p) => {
+            const dec = 1 / p;
+            return dec >= 2
+                ? `+${Math.round((dec - 1) * 100)}`
+                : `-${Math.round(100 / (dec - 1))}`;
+        };
+        const payoutFor = (p, stake = 10) => {
+            const dec = 1 / p;
+            return Math.round(stake * dec);
+        };
+        const fmtPct = (p) => (p < 0.1 ? '<0.1%' : `${p.toFixed(1)}%`);
+
+        (function buildGrid() {
+            const grid = document.getElementById('livegrid');
+            const readout = document.getElementById('lgReadout');
+            if (!grid) return;
+
+            let lo = Infinity, hi = -Infinity, hotKey = '';
+            for (const y of DOWN) for (const x of ACROSS) {
+                const p = (y.pct / 100) * (x.pct / 100);
+                if (p < lo) lo = p;
+                if (p > hi) { hi = p; hotKey = `${y.name}|${x.name}`; }
+            }
+            const heat = (p) => {
+                const t = hi > lo ? (p - lo) / (hi - lo) : 0;
+                return `rgba(52, 211, 153, ${(0.06 + t * 0.6).toFixed(3)})`;
+            };
+
+            const corner = document.createElement('div');
+            corner.className = 'lg-corner';
+            corner.innerHTML = '<span class="cy">↓ World Cup</span><span class="cx">→ MLB</span>';
+            grid.appendChild(corner);
+
+            ACROSS.forEach((x, ci) => {
+                const c = document.createElement('div');
+                c.className = 'lg-col';
+                c.dataset.col = ci;
+                c.innerHTML = `<span>${x.abbr}</span>`;
+                grid.appendChild(c);
+            });
+
+            DOWN.forEach((y, ri) => {
+                const rh = document.createElement('div');
+                rh.className = 'lg-row';
+                rh.dataset.row = ri;
+                rh.innerHTML = `<span class="lg-flag">${y.flag}</span><span>${y.name}</span>`;
+                grid.appendChild(rh);
+
+                ACROSS.forEach((x, ci) => {
+                    const p = (y.pct / 100) * (x.pct / 100);
+                    const cell = document.createElement('div');
+                    cell.className = 'lg-cell';
+                    cell.dataset.row = ri;
+                    cell.dataset.col = ci;
+                    cell.style.setProperty('--heat', heat(p));
+                    const isHot = `${y.name}|${x.name}` === hotKey;
+                    cell.innerHTML =
+                        `<span class="odds">${americanFromProb(p)}</span>` +
+                        `<span class="pay">$${payoutFor(p)}</span>` +
+                        (isHot ? '<span class="hot">🔥</span>' : '');
+
+                    const show = () => {
+                        readout.innerHTML =
+                            `<b>${y.flag} ${y.name}</b> + <b>${x.name}</b> &nbsp;·&nbsp; ` +
+                            `<span class="am">${americanFromProb(p)}</span> &nbsp;·&nbsp; ` +
+                            `$10 → <b>$${payoutFor(p)}</b> &nbsp;·&nbsp; ${fmtPct(p * 100)} chance`;
+                    };
+                    cell.addEventListener('mouseenter', () => { highlight(ri, ci); show(); });
+                    cell.addEventListener('click', () => { select(ri, ci); show(); });
+                    grid.appendChild(cell);
+                });
+            });
+
+            function clearClass(cls) {
+                grid.querySelectorAll('.' + cls).forEach((el) => el.classList.remove(cls));
+            }
+            function highlight(ri, ci) {
+                clearClass('hi');
+                grid.querySelectorAll(`[data-row="${ri}"]`).forEach((el) => el.classList.add('hi'));
+                grid.querySelectorAll(`[data-col="${ci}"]`).forEach((el) => el.classList.add('hi'));
+            }
+            function select(ri, ci) {
+                clearClass('sel');
+                grid.querySelector(`.lg-cell[data-row="${ri}"][data-col="${ci}"]`)
+                    ?.classList.add('sel');
+            }
+        })();
     </script>
 </body>
 </html>
