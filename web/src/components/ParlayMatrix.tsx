@@ -13,7 +13,9 @@ import {
 import type { FuturesMarket, FuturesOutcome } from "../types/futures";
 import styles from "./ParlayMatrix.module.css";
 
-const TOP_N = 6;
+// Team-count options for the grid axes. "All" shows the full contender field
+// we fetch (up to 14 per league); 6 / 10 give a tighter board.
+const COUNT_OPTIONS = [6, 10, 99] as const;
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -147,6 +149,11 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
   // Extra "pinned" legs (3rd / 4th team) that fold into every cell so the grid
   // can represent a 3- or 4-leg parlay while staying a 2-axis chart.
   const [pins, setPins] = useState<FuturesLeg[]>([]);
+  // How many teams to show per axis (defaults to the full field).
+  const [shown, setShown] = useState<number>(99);
+  // Per-axis search filters.
+  const [qy, setQy] = useState("");
+  const [qx, setQx] = useState("");
 
   const yMarket = markets.find((m) => m.key === yKey) ?? markets[0];
   const xMarket =
@@ -166,13 +173,23 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
     setSel({ x: null, y: null });
   };
 
+  // A search term filters the entire field for that axis; otherwise we show the
+  // top `shown` teams.
+  const filterOuts = (m: FuturesMarket | undefined, q: string) => {
+    if (!m) return [];
+    const term = q.trim().toLowerCase();
+    if (!term) return m.outcomes.slice(0, shown);
+    return m.outcomes.filter((o) =>
+      (o.displayName ?? o.name).toLowerCase().includes(term),
+    );
+  };
   const yOuts = useMemo(
-    () => (yMarket ? yMarket.outcomes.slice(0, TOP_N) : []),
-    [yMarket],
+    () => filterOuts(yMarket, qy),
+    [yMarket, shown, qy],
   );
   const xOuts = useMemo(
-    () => (xMarket ? xMarket.outcomes.slice(0, TOP_N) : []),
-    [xMarket],
+    () => filterOuts(xMarket, qx),
+    [xMarket, shown, qx],
   );
 
   // Normalize combined win probability across the grid for the heat map, and
@@ -282,6 +299,38 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
               ))}
           </select>
         </label>
+        <div className={styles.picker}>
+          <span>Teams</span>
+          <div className={styles.countToggle}>
+            {COUNT_OPTIONS.map((n) => (
+              <button
+                key={n}
+                type="button"
+                className={`${styles.countBtn} ${shown === n ? styles.countActive : ""}`}
+                onClick={() => setShown(n)}
+              >
+                {n === 99 ? "All" : n}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.searchRow}>
+        <input
+          type="search"
+          className={styles.search}
+          placeholder={`🔎 Search ${yMarket.league} (down)…`}
+          value={qy}
+          onChange={(e) => setQy(e.target.value)}
+        />
+        <input
+          type="search"
+          className={styles.search}
+          placeholder={`🔎 Search ${xMarket.league} (across)…`}
+          value={qx}
+          onChange={(e) => setQx(e.target.value)}
+        />
       </div>
 
       <div className={styles.pinRow}>
@@ -325,6 +374,9 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
         )}
       </p>
 
+      {yOuts.length === 0 || xOuts.length === 0 ? (
+        <p className={styles.note}>No teams match your search.</p>
+      ) : (
       <div className={styles.scroll}>
         <div
           className={styles.grid}
@@ -405,6 +457,7 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
           ))}
         </div>
       </div>
+      )}
 
       {bothSelected && selectedY && selectedX && (
         <div className={styles.detail}>
@@ -557,7 +610,7 @@ function PinPicker({
           }}
         >
           <option value="">Pick a team…</option>
-          {market.outcomes.slice(0, TOP_N).map((o) => (
+          {market.outcomes.map((o) => (
             <option key={o.name} value={o.name}>
               {o.displayName ?? o.name}
             </option>

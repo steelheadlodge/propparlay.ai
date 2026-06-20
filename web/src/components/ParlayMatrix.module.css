@@ -33,6 +33,68 @@
   cursor: pointer;
 }
 
+.searchRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.search {
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  background: var(--dark-card, #111827);
+  color: #e5e7eb;
+  font-size: 0.82rem;
+}
+
+.search::placeholder {
+  color: var(--gray, #94a3b8);
+}
+
+.search:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.6);
+}
+
+@media (max-width: 560px) {
+  .searchRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.countToggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 10px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  background: var(--dark-card, #111827);
+}
+
+.countBtn {
+  padding: 0.35rem 0.7rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gray, #94a3b8);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.countBtn:hover {
+  color: #e5e7eb;
+}
+
+.countActive {
+  background: rgba(99, 102, 241, 0.2);
+  color: #c7d2fe;
+}
+
 .legend {
   margin: 0 0 0.9rem;
   font-size: 0.78rem;
@@ -130,9 +192,10 @@
 }
 
 .scroll {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: 72vh;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 0.5rem;
+  border-radius: 12px;
 }
 
 .grid {
@@ -229,6 +292,10 @@
   flex-direction: column;
   text-align: center;
   justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--dark-card, #111827);
 }
 
 .rowHead {
@@ -285,8 +352,9 @@
 
 .corner {
   position: sticky;
+  top: 0;
   left: 0;
-  z-index: 4;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: flex-start;

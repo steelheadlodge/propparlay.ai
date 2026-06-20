@@ -33,8 +33,9 @@ const LEAGUE_BY_PREFIX = [
 // Safety cap on markets fetched per build to protect the request quota.
 // Each market costs 1 Odds API credit; the route caches for many hours.
 const MAX_MARKETS = 14;
-// Trim very large outright fields (e.g. 40-team MVP races) for a lean payload.
-const MAX_OUTCOMES = 14;
+// Cap outright fields so payloads stay sane on huge markets (e.g. 48-nation
+// World Cup, full MVP races) while still showing the entire realistic field.
+const MAX_OUTCOMES = 64;
 
 function leagueForKey(key) {
   for (const [prefix, league] of LEAGUE_BY_PREFIX) {

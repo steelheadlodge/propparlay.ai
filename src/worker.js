@@ -375,7 +375,7 @@ export default {
     // markets), edge-cached 12h — futures move slowly and this protects quota.
     if (url.pathname === "/api/futures" && request.method === "GET") {
       try {
-        const data = await cachedJson("futures:v5", 18 * 60 * 60, () =>
+        const data = await cachedJson("futures:v6", 18 * 60 * 60, () =>
           getFutures(env),
         );
         return jsonResponse(data);
