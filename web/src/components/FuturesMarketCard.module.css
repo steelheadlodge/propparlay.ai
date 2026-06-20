@@ -133,6 +133,7 @@
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
   padding: 1px 6px;
   border-radius: 999px;
   color: var(--heat, #94a3b8);
