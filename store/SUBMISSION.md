@@ -28,10 +28,16 @@ These are the only two screenshot sizes App Store Connect requires in 2026
 (6.9" iPhone + 13" iPad cover all smaller devices). Unframed raw captures are in
 `store/raw/` if you ever want plain device shots.
 
+**Screenshot order (lead with the hook):** the cross-sport **futures heat-map
+grid** is screenshot **#1** on both devices — it's the differentiator that
+explains the whole product at a glance and is the strongest reason to try
+futures parlays. iPhone order: Grid → Futures lab → AI builder → Tonight. iPad
+order: Grid → Futures lab → Tonight.
+
 ## Listing copy
 
 **Promotional text (170 char)**
-> Build cross-sport title parlays — World Series, Super Bowl, World Cup & more — at each team's real win chance. AI picks, heat-mapped odds, and live line shopping.
+> See futures as a heat map: pick a team down, one across, and the grid shows your cross-sport parlay's real odds & win chance. Greener = likelier to hit. Plus AI picks.
 
 **Description**
 > PropParlay is the parlay lab built around futures. Instead of grinding single
