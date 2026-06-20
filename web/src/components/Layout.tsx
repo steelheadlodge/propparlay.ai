@@ -28,6 +28,14 @@ export default function Layout({
             Futures
           </NavLink>
           <NavLink
+            to="/grid"
+            className={({ isActive }) =>
+              `${styles.tab} ${isActive ? styles.tabActive : ""}`
+            }
+          >
+            Grid
+          </NavLink>
+          <NavLink
             to="/tonight"
             className={({ isActive }) =>
               `${styles.tab} ${isActive ? styles.tabActive : ""}`

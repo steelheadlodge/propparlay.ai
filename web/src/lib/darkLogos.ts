@@ -5,6 +5,8 @@ const OUTLINE_LOGOS = new Set<string>([
   "MLB:NYY", // Yankees
   "MLB:SD", // Padres
   "MLB:TB", // Rays
+  "MLB:KC", // Royals
+  "MLB:COL", // Rockies
   "NFL:LAR", // Rams
 ]);
 

@@ -225,6 +225,18 @@ export default function Futures() {
         </>
       )}
 
+      <Link to="/grid" className={styles.crossLink}>
+        <span className={styles.crossIcon}>🧮</span>
+        <span className={styles.crossText}>
+          <strong>Try the cross-sport parlay grid</strong>
+          <span>
+            Cross two leagues on a heat-mapped board — pick a row & column to see
+            combined odds, payout & the reasons behind each combo
+          </span>
+        </span>
+        <span className={styles.crossArrow}>→</span>
+      </Link>
+
       <Link to="/tonight" className={styles.crossLink}>
         <span className={styles.crossIcon}>🎯</span>
         <span className={styles.crossText}>

@@ -1,4 +1,4 @@
-import { sportTheme } from "../lib/theme";
+import { isSoccer, sportTheme } from "../lib/theme";
 
 export default function SportIcon({
   sport,
@@ -16,8 +16,28 @@ export default function SportIcon({
     "aria-hidden": true as const,
   };
 
+  if (isSoccer(sport)) {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.8" />
+        <path
+          d="M12 7.5l2.6 1.9-1 3.1h-3.2l-1-3.1L12 7.5z"
+          stroke={color}
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M12 3v2.2M5.2 8.5l2 1.4M18.8 8.5l-2 1.4M7.2 18l1.3-2M16.8 18l-1.3-2"
+          stroke={color}
+          strokeWidth="1.2"
+        />
+      </svg>
+    );
+  }
+
   switch (sport) {
     case "NBA":
+    case "NCAAB":
       return (
         <svg {...common}>
           <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.8" />
@@ -36,6 +56,7 @@ export default function SportIcon({
         </svg>
       );
     case "NFL":
+    case "NCAAF":
       return (
         <svg {...common}>
           <ellipse

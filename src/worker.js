@@ -375,7 +375,7 @@ export default {
     // markets), edge-cached 12h — futures move slowly and this protects quota.
     if (url.pathname === "/api/futures" && request.method === "GET") {
       try {
-        const data = await cachedJson("futures:v3", 12 * 60 * 60, () =>
+        const data = await cachedJson("futures:v5", 18 * 60 * 60, () =>
           getFutures(env),
         );
         return jsonResponse(data);
@@ -421,13 +421,24 @@ export default {
 
     // SPA fallback for React app at /app/*
     if (url.pathname.startsWith("/app")) {
-      let response = await env.ASSETS.fetch(request);
-      if (response.status === 404) {
-        const indexUrl = new URL(request.url);
-        indexUrl.pathname = "/app/index.html";
-        response = await env.ASSETS.fetch(new Request(indexUrl, request));
+      // Client-side routes (no file extension, e.g. /app/grid) must always get
+      // the app shell so React Router can handle them. The assets server would
+      // otherwise 307-redirect extensionless paths to /app/, dropping the route.
+      const lastSegment = url.pathname.split("/").pop() ?? "";
+      const isAsset = lastSegment.includes(".");
+      // Fetch the app shell via the directory path ("/app/"), which the asset
+      // server returns as a clean 200. Requesting "/app/index.html" directly
+      // gets 307-redirected back to "/app/", causing a redirect loop.
+      const shell = () => {
+        const shellUrl = new URL(request.url);
+        shellUrl.pathname = "/app/";
+        return env.ASSETS.fetch(new Request(shellUrl, request));
+      };
+      if (!isAsset) {
+        return shell();
       }
-      return response;
+      const response = await env.ASSETS.fetch(request);
+      return response.status === 404 ? shell() : response;
     }
 
     const response = await env.ASSETS.fetch(request);

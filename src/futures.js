@@ -9,16 +9,30 @@
 import { ODDS_BASE, oddsFetch, getOddsQuota } from "./odds.js";
 import { normName, getLeagueTeams } from "./espn-teams.js";
 
-// Map an Odds API sport key prefix to our league label.
+// Map an Odds API sport key prefix to our league label. Order matters: more
+// specific soccer prefixes are matched before any generic ones.
 const LEAGUE_BY_PREFIX = [
   ["americanfootball_nfl", "NFL"],
+  ["americanfootball_ncaaf", "NCAAF"],
   ["baseball_mlb", "MLB"],
   ["basketball_nba", "NBA"],
+  ["basketball_ncaab", "NCAAB"],
   ["icehockey_nhl", "NHL"],
+  ["soccer_fifa_world_cup", "World Cup"],
+  ["soccer_uefa_champs_league", "UCL"],
+  ["soccer_uefa_europa", "Europa"],
+  ["soccer_uefa_european_championship", "Euros"],
+  ["soccer_epl", "EPL"],
+  ["soccer_spain_la_liga", "La Liga"],
+  ["soccer_italy_serie_a", "Serie A"],
+  ["soccer_germany_bundesliga", "Bundesliga"],
+  ["soccer_france_ligue_one", "Ligue 1"],
+  ["soccer_usa_mls", "MLS"],
 ];
 
 // Safety cap on markets fetched per build to protect the request quota.
-const MAX_MARKETS = 24;
+// Each market costs 1 Odds API credit; the route caches for many hours.
+const MAX_MARKETS = 14;
 // Trim very large outright fields (e.g. 40-team MVP races) for a lean payload.
 const MAX_OUTCOMES = 14;
 
@@ -181,12 +195,30 @@ export async function getFutures(env) {
     return { configured: true, markets: [], quota: getOddsQuota(), error: "catalog" };
   }
 
-  // Order leagues so in-season futures (MLB now) surface first, and cap total.
-  const LEAGUE_ORDER = { MLB: 0, NFL: 1, NBA: 2, NHL: 3 };
+  // Order leagues so the most timely / marquee futures surface first, and cap
+  // the total fetched to protect the Odds API quota.
+  const LEAGUE_ORDER = {
+    "World Cup": 0,
+    MLB: 1,
+    NBA: 2,
+    NHL: 3,
+    NFL: 4,
+    NCAAF: 5,
+    NCAAB: 6,
+    UCL: 7,
+    EPL: 8,
+    "La Liga": 9,
+    "Serie A": 10,
+    Bundesliga: 11,
+    "Ligue 1": 12,
+    Europa: 13,
+    Euros: 14,
+    MLS: 15,
+  };
   catalog.sort(
     (a, b) =>
-      (LEAGUE_ORDER[leagueForKey(a.key)] ?? 9) -
-      (LEAGUE_ORDER[leagueForKey(b.key)] ?? 9),
+      (LEAGUE_ORDER[leagueForKey(a.key)] ?? 99) -
+      (LEAGUE_ORDER[leagueForKey(b.key)] ?? 99),
   );
   const selected = catalog.slice(0, MAX_MARKETS);
 

@@ -6,6 +6,19 @@ export const ESPN_PATH = {
   NHL: "hockey/nhl",
   NFL: "football/nfl",
   MLB: "baseball/mlb",
+  NCAAF: "football/college-football",
+  NCAAB: "basketball/mens-college-basketball",
+  // Soccer competitions use ESPN's league slugs under /sports/soccer/<slug>.
+  "World Cup": "soccer/fifa.world",
+  UCL: "soccer/uefa.champions",
+  Europa: "soccer/uefa.europa",
+  Euros: "soccer/uefa.euro",
+  EPL: "soccer/eng.1",
+  "La Liga": "soccer/esp.1",
+  "Serie A": "soccer/ita.1",
+  Bundesliga: "soccer/ger.1",
+  "Ligue 1": "soccer/fra.1",
+  MLS: "soccer/usa.1",
 };
 
 export function normName(s) {
@@ -52,9 +65,9 @@ export async function getLeagueTeams(league) {
   const path = ESPN_PATH[league];
   if (!path) return null;
   const json = await cachedFetchJson(
-    `espn:teams:${league}:v1`,
+    `espn:teams:${league.replace(/\s+/g, "_")}:v1`,
     24 * 60 * 60,
-    `https://site.api.espn.com/apis/site/v2/sports/${path}/teams`,
+    `https://site.api.espn.com/apis/site/v2/sports/${path}/teams?limit=300`,
     5000,
   );
   const teams = json?.sports?.[0]?.leagues?.[0]?.teams ?? [];

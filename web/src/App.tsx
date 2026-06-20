@@ -3,6 +3,7 @@ import { ParlayProvider } from "./context/ParlayContext";
 import { FuturesParlayProvider } from "./context/FuturesParlayContext";
 import Dashboard from "./pages/Dashboard";
 import Futures from "./pages/Futures";
+import Matrix from "./pages/Matrix";
 
 export default function App() {
   return (
@@ -15,6 +16,14 @@ export default function App() {
           element={
             <FuturesParlayProvider>
               <Futures />
+            </FuturesParlayProvider>
+          }
+        />
+        <Route
+          path="/grid"
+          element={
+            <FuturesParlayProvider>
+              <Matrix />
             </FuturesParlayProvider>
           }
         />
