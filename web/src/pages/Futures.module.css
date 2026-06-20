@@ -13,15 +13,19 @@
   background: var(--dark-card);
   border: 1px solid var(--border);
   border-radius: 14px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .statIcon {
   font-size: 1.5rem;
+  flex-shrink: 0;
 }
 
 .stat div {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .statValue {
@@ -36,7 +40,68 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
+  max-width: 100%;
+}
+
+.tail {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.18),
+    rgba(16, 185, 129, 0.14)
+  );
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: 14px;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.tail:hover {
+  border-color: rgba(99, 102, 241, 0.65);
+  transform: translateY(-1px);
+}
+
+.tailIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.tailText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.tailText strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--light);
+}
+
+.tailText span {
+  font-size: 0.78rem;
+  color: var(--gray);
+}
+
+.tailCta {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0a0f1f;
+  background: linear-gradient(135deg, #818cf8, #34d399);
+  padding: 0.5rem 0.85rem;
+  border-radius: 9px;
+}
+
+@media (max-width: 560px) {
+  .tailCta {
+    display: none;
+  }
 }
 
 .grid {

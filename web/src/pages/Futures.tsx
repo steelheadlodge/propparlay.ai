@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import FuturesMarketCard from "../components/FuturesMarketCard";
 import FuturesSlip from "../components/FuturesSlip";
@@ -12,6 +12,7 @@ export default function Futures() {
   const state = useFutures();
   const { hydrate } = useFuturesParlay();
   const hydrated = useRef(false);
+  const [sharedNames, setSharedNames] = useState<string[] | null>(null);
 
   // Load a shared parlay from ?p= once on mount.
   useEffect(() => {
@@ -21,7 +22,10 @@ export default function Futures() {
     const p = params.get("p");
     if (!p) return;
     const legs = decodeParlay(p);
-    if (legs) hydrate(legs);
+    if (legs) {
+      hydrate(legs);
+      setSharedNames(legs.map((l) => l.name));
+    }
   }, [hydrate]);
 
   const markets = state.status === "ready" ? state.markets : [];
@@ -48,6 +52,20 @@ export default function Futures() {
       title="The future of parlays"
       subtitle="Stack cross-sport title bets — World Series, Super Bowl, Stanley Cup and more — at de-vigged true odds. The first parlay lab built around futures."
     >
+      {sharedNames && (
+        <a className={styles.tail} href="/#waitlistForm">
+          <span className={styles.tailIcon}>🎟️</span>
+          <span className={styles.tailText}>
+            <strong>You're viewing a shared parlay</strong>
+            <span>
+              {sharedNames.join(" + ")} — it's loaded in your slip. Join the
+              waitlist to tail picks like this.
+            </span>
+          </span>
+          <span className={styles.tailCta}>Join waitlist →</span>
+        </a>
+      )}
+
       <div className={styles.stats}>
         <div className={styles.stat}>
           <span className={styles.statIcon}>🏆</span>
