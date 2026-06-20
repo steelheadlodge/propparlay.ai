@@ -144,6 +144,58 @@
   box-shadow: 0 8px 22px rgba(99, 102, 241, 0.4);
 }
 
+.lockRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+
+.lockLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--gray, #94a3b8);
+}
+
+.lockHint {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+}
+
+.lockSelect {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.55rem 0.7rem;
+  border-radius: 11px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  background: var(--dark-card, #111827);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lockSelect:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.lockBadge {
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
 .result {
   margin-top: 1.1rem;
   padding-top: 1.1rem;
