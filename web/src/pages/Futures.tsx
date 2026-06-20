@@ -1,18 +1,48 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import AnimatedNumber from "../components/AnimatedNumber";
 import FuturesMarketCard from "../components/FuturesMarketCard";
 import FuturesSlip from "../components/FuturesSlip";
 import Layout from "../components/Layout";
+import SportIcon from "../components/SportIcon";
+import type { FuturesLeg } from "../context/FuturesParlayContext";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
 import { useFutures } from "../hooks/useFutures";
 import { decodeParlay } from "../lib/shareParlay";
+import { sportTheme } from "../lib/theme";
+import type { FuturesMarket } from "../types/futures";
 import styles from "./Futures.module.css";
+
+function buildExampleLegs(markets: FuturesMarket[]): FuturesLeg[] {
+  const picks: FuturesLeg[] = [];
+  const usedLeagues = new Set<string>();
+  for (const m of markets) {
+    if (usedLeagues.has(m.league)) continue;
+    const o = m.outcomes[0];
+    if (!o) continue;
+    picks.push({
+      id: `${m.key}:${o.name}`,
+      league: m.league,
+      marketKey: m.key,
+      marketTitle: m.title,
+      name: o.name,
+      abbr: o.abbr,
+      logo: o.logo,
+      price: o.price,
+      fairPct: o.fairPct,
+    });
+    usedLeagues.add(m.league);
+    if (picks.length >= 2) break;
+  }
+  return picks;
+}
 
 export default function Futures() {
   const state = useFutures();
-  const { hydrate } = useFuturesParlay();
+  const { legs: slipLegs, hydrate } = useFuturesParlay();
   const hydrated = useRef(false);
   const [sharedNames, setSharedNames] = useState<string[] | null>(null);
+  const [league, setLeague] = useState<string>("ALL");
 
   // Load a shared parlay from ?p= once on mount.
   useEffect(() => {
@@ -47,6 +77,11 @@ export default function Futures() {
     [markets],
   );
 
+  const visibleMarkets = useMemo(
+    () => (league === "ALL" ? markets : markets.filter((m) => m.league === league)),
+    [markets, league],
+  );
+
   return (
     <Layout
       title="The future of parlays"
@@ -70,7 +105,9 @@ export default function Futures() {
         <div className={styles.stat}>
           <span className={styles.statIcon}>🏆</span>
           <div>
-            <span className={styles.statValue}>{markets.length}</span>
+            <span className={styles.statValue}>
+              <AnimatedNumber value={markets.length} />
+            </span>
             <span className={styles.statLabel}>Markets live</span>
           </div>
         </div>
@@ -78,7 +115,11 @@ export default function Futures() {
           <span className={styles.statIcon}>🥇</span>
           <div>
             <span className={styles.statValue}>
-              {topPick ? `${topPick.pct}%` : "—"}
+              {topPick ? (
+                <AnimatedNumber value={topPick.pct} decimals={1} suffix="%" />
+              ) : (
+                "—"
+              )}
             </span>
             <span className={styles.statLabel}>
               {topPick ? `Top favorite · ${topPick.name}` : "Top favorite"}
@@ -88,7 +129,9 @@ export default function Futures() {
         <div className={styles.stat}>
           <span className={styles.statIcon}>🌐</span>
           <div>
-            <span className={styles.statValue}>{leagues.length}</span>
+            <span className={styles.statValue}>
+              <AnimatedNumber value={leagues.length} />
+            </span>
             <span className={styles.statLabel}>Leagues</span>
           </div>
         </div>
@@ -97,7 +140,7 @@ export default function Futures() {
             <span className={styles.statIcon}>⚡</span>
             <div>
               <span className={styles.statValue}>
-                {quota.remaining.toLocaleString()}
+                <AnimatedNumber value={quota.remaining} />
               </span>
               <span className={styles.statLabel}>Odds credits left</span>
             </div>
@@ -121,11 +164,64 @@ export default function Futures() {
           books open them for the upcoming seasons.
         </p>
       ) : (
-        <div className={styles.grid}>
-          {markets.map((m) => (
-            <FuturesMarketCard key={m.key} market={m} />
-          ))}
-        </div>
+        <>
+          {slipLegs.length === 0 && (
+            <button
+              type="button"
+              className={styles.exampleCta}
+              onClick={() => hydrate(buildExampleLegs(markets))}
+            >
+              <span className={styles.exampleIcon}>✨</span>
+              <span>
+                New to futures?{" "}
+                <strong>Load an example cross-sport parlay</strong> to see how it
+                works.
+              </span>
+            </button>
+          )}
+
+          {leagues.length > 1 && (
+            <div className={styles.filters}>
+              <button
+                type="button"
+                className={`${styles.filterTab} ${league === "ALL" ? styles.filterActive : ""}`}
+                onClick={() => setLeague("ALL")}
+              >
+                All
+              </button>
+              {leagues.map((lg) => {
+                const active = league === lg;
+                const theme = sportTheme(lg);
+                return (
+                  <button
+                    key={lg}
+                    type="button"
+                    className={`${styles.filterTab} ${active ? styles.filterActive : ""}`}
+                    style={
+                      active
+                        ? {
+                            borderColor: theme.color,
+                            color: theme.color,
+                            background: theme.glow,
+                          }
+                        : undefined
+                    }
+                    onClick={() => setLeague(lg)}
+                  >
+                    <SportIcon sport={lg} size={14} />
+                    {lg}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className={styles.grid}>
+            {visibleMarkets.map((m) => (
+              <FuturesMarketCard key={m.key} market={m} />
+            ))}
+          </div>
+        </>
       )}
 
       <Link to="/tonight" className={styles.crossLink}>

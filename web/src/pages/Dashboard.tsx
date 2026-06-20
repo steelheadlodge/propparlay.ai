@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import AnimatedNumber from "../components/AnimatedNumber";
 import GamesBoard from "../components/GamesBoard";
 import HotZonesGrid from "../components/HotZonesGrid";
 import Layout from "../components/Layout";
@@ -52,21 +53,27 @@ export default function Dashboard() {
         <div className={styles.stat}>
           <span className={styles.statIcon}>📊</span>
           <div>
-            <span className={styles.statValue}>{sorted.length}</span>
+            <span className={styles.statValue}>
+              <AnimatedNumber value={sorted.length} />
+            </span>
             <span className={styles.statLabel}>Props tracked</span>
           </div>
         </div>
         <div className={styles.stat}>
           <span className={styles.statIcon}>🔥</span>
           <div>
-            <span className={styles.statValue}>{topEdge.toFixed(1)}%</span>
+            <span className={styles.statValue}>
+              <AnimatedNumber value={topEdge} decimals={1} suffix="%" />
+            </span>
             <span className={styles.statLabel}>Top edge</span>
           </div>
         </div>
         <div className={styles.stat}>
           <span className={styles.statIcon}>🎯</span>
           <div>
-            <span className={styles.statValue}>{avgConfidence}%</span>
+            <span className={styles.statValue}>
+              <AnimatedNumber value={avgConfidence} suffix="%" />
+            </span>
             <span className={styles.statLabel}>Avg confidence</span>
           </div>
         </div>

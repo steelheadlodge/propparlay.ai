@@ -4,8 +4,8 @@ import {
   americanToDecimal,
   decimalToAmerican,
   formatAmerican,
-  formatCurrency,
 } from "../lib/odds";
+import AnimatedNumber from "./AnimatedNumber";
 import { needsLogoOutline } from "../lib/darkLogos";
 import { buildParlayImage } from "../lib/parlayImage";
 import { shareUrl } from "../lib/shareParlay";
@@ -95,7 +95,11 @@ export default function FuturesSlip() {
       >
         <span className={styles.title}>
           Futures parlay
-          {legs.length > 0 && <span className={styles.count}>{legs.length}</span>}
+          {legs.length > 0 && (
+            <span key={legs.length} className={styles.count}>
+              {legs.length}
+            </span>
+          )}
         </span>
         <span className={styles.toggle}>{open ? "▾" : "▴"}</span>
       </button>
@@ -172,17 +176,22 @@ export default function FuturesSlip() {
               <div className={styles.summary}>
                 <div className={styles.summaryRow}>
                   <span>Combined odds</span>
-                  <strong>{formatAmerican(american)}</strong>
+                  <strong>
+                    {formatAmerican(american)}
+                    <span className={styles.mult}>{decimal.toFixed(1)}×</span>
+                  </strong>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Profit</span>
                   <strong className={styles.profit}>
-                    {formatCurrency(profit)}
+                    <AnimatedNumber value={profit} currency />
                   </strong>
                 </div>
                 <div className={`${styles.summaryRow} ${styles.payoutRow}`}>
                   <span>Total payout</span>
-                  <strong>{formatCurrency(payout)}</strong>
+                  <strong>
+                    <AnimatedNumber value={payout} currency />
+                  </strong>
                 </div>
               </div>
 
