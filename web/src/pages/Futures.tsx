@@ -61,14 +61,21 @@ export default function Futures() {
   }, [hydrate]);
 
   const markets = state.status === "ready" ? state.markets : [];
-  const quota = state.status === "ready" ? state.quota : null;
 
   const topPick = useMemo(() => {
-    let best: { name: string; pct: number; league: string } | null = null;
+    let best:
+      | { name: string; pct: number; league: string; title: string }
+      | null = null;
     for (const m of markets) {
       const o = m.outcomes[0];
       if (o && (!best || o.fairPct > best.pct)) {
-        best = { name: o.name, pct: o.fairPct, league: m.league };
+        best = {
+          name: o.displayName ?? o.name,
+          pct: o.fairPct,
+          league: m.league,
+          // Trim the trailing "Winner" so "World Series Winner" reads cleanly.
+          title: m.title.replace(/\s*winner$/i, ""),
+        };
       }
     }
     return best;
@@ -103,52 +110,32 @@ export default function Futures() {
         </a>
       )}
 
-      <div className={styles.stats}>
-        <div className={styles.stat}>
-          <span className={styles.statIcon}>🏆</span>
-          <div>
-            <span className={styles.statValue}>
-              <AnimatedNumber value={markets.length} />
-            </span>
-            <span className={styles.statLabel}>Markets live</span>
-          </div>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.statIcon}>🥇</span>
-          <div>
-            <span className={styles.statValue}>
-              {topPick ? (
-                <AnimatedNumber value={topPick.pct} decimals={1} suffix="%" />
-              ) : (
-                "—"
-              )}
-            </span>
-            <span className={styles.statLabel}>
-              {topPick ? `Top favorite · ${topPick.name}` : "Top favorite"}
-            </span>
-          </div>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.statIcon}>🌐</span>
-          <div>
-            <span className={styles.statValue}>
-              <AnimatedNumber value={leagues.length} />
-            </span>
-            <span className={styles.statLabel}>Leagues</span>
-          </div>
-        </div>
-        {quota?.remaining != null && (
-          <div className={styles.stat}>
-            <span className={styles.statIcon}>⚡</span>
-            <div>
-              <span className={styles.statValue}>
-                <AnimatedNumber value={quota.remaining} />
+      {markets.length > 0 && (
+        <div className={styles.headline}>
+          <span className={styles.headlineHook}>
+            <span className={styles.headlineFlame}>🔥</span>
+            {topPick ? (
+              <span>
+                <strong>{topPick.name}</strong> — favorite to win the{" "}
+                {topPick.title}
+                <span className={styles.headlinePct}>
+                  <AnimatedNumber value={topPick.pct} decimals={1} suffix="%" />{" "}
+                  real shot
+                </span>
               </span>
-              <span className={styles.statLabel}>Odds credits left</span>
-            </div>
-          </div>
-        )}
-      </div>
+            ) : (
+              <span>
+                Cross-sport title futures — every pick at its{" "}
+                <strong>real, de-vigged win chance</strong>
+              </span>
+            )}
+          </span>
+          <span className={styles.headlineMeta}>
+            <AnimatedNumber value={markets.length} /> markets ·{" "}
+            <AnimatedNumber value={leagues.length} /> leagues live
+          </span>
+        </div>
+      )}
 
       {state.status === "loading" ? (
         <div className={styles.grid}>
