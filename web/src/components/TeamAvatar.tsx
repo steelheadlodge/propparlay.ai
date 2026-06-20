@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { needsLogoOutline } from "../lib/darkLogos";
 import { espnLogoUrl, teamColor } from "../lib/theme";
 import styles from "./TeamAvatar.module.css";
 
@@ -50,7 +51,9 @@ export default function TeamAvatar({
           src={logo}
           alt=""
           loading="lazy"
-          className={styles.logo}
+          className={`${styles.logo} ${
+            needsLogoOutline(sport, team) ? styles.logoOutline : ""
+          }`}
           onError={() => setFailed(true)}
         />
       </span>

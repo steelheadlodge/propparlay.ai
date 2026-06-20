@@ -29,6 +29,12 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
 }
 
+/* White outline for dark/low-contrast crests (same teams as the futures board). */
+.logoOutline {
+  filter: drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
+}
+
 .headshotWrap {
   display: inline-flex;
   align-items: flex-end;
