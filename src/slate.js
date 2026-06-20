@@ -5,6 +5,7 @@
 // (for logos + headshots) are free and cached aggressively.
 
 import { getGameOdds, getPlayerProps, getOddsQuota, SPORT_KEYS } from "./odds.js";
+import { normName, getLeagueTeams, getRosterHeadshots } from "./espn-teams.js";
 
 // Cap on games we fetch player props for per slate build. Each game costs
 // ~3 Odds API credits (one per market), so 6 games ≈ 18 credits per cold build.
@@ -17,13 +18,6 @@ const MIN_CONFIDENCE = 55;
 const MAX_CONFIDENCE = 93;
 // Show the value badge only when a book genuinely beats the consensus.
 const VALUE_EDGE = 0.75;
-
-const ESPN_PATH = {
-  NBA: "basketball/nba",
-  NHL: "hockey/nhl",
-  NFL: "football/nfl",
-  MLB: "baseball/mlb",
-};
 
 // Odds API market key -> display label, short unit, and hot-zone row.
 const MARKET_META = {
@@ -45,95 +39,6 @@ function americanToDecimal(odds) {
 
 function impliedProb(odds) {
   return odds > 0 ? 100 / (odds + 100) : -odds / (-odds + 100);
-}
-
-function normName(s) {
-  return (s ?? "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z ]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-async function fetchJson(url, ms) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ms);
-  try {
-    const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-// Edge-cached JSON fetch for the free ESPN endpoints (teams, rosters).
-async function cachedFetchJson(cacheKey, ttlSeconds, url, ms) {
-  const cache = caches.default;
-  const req = new Request(`https://cache.propparlay.ai/${cacheKey}`);
-  const hit = await cache.match(req);
-  if (hit) return await hit.json();
-  const data = await fetchJson(url, ms);
-  if (data == null) return null;
-  const res = new Response(JSON.stringify(data), {
-    headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${ttlSeconds}` },
-  });
-  await cache.put(req, res.clone());
-  return data;
-}
-
-// league -> { byName: Map(normName -> {abbr, logo}), abbrLogo: Map }
-async function getLeagueTeams(league) {
-  const path = ESPN_PATH[league];
-  if (!path) return null;
-  const json = await cachedFetchJson(
-    `espn:teams:${league}:v1`,
-    24 * 60 * 60,
-    `https://site.api.espn.com/apis/site/v2/sports/${path}/teams`,
-    5000,
-  );
-  const teams = json?.sports?.[0]?.leagues?.[0]?.teams ?? [];
-  const byName = new Map();
-  const abbrLogo = new Map();
-  for (const t of teams) {
-    const team = t.team ?? {};
-    const abbr = (team.abbreviation ?? "").toUpperCase();
-    const logo = team.logos?.[0]?.href ?? null;
-    if (!abbr) continue;
-    abbrLogo.set(abbr, logo);
-    for (const n of [team.displayName, team.shortDisplayName, team.name, team.nickname]) {
-      if (n) byName.set(normName(n), { abbr, logo });
-    }
-  }
-  return { byName, abbrLogo };
-}
-
-// teamAbbr -> Map(normName -> headshotUrl)
-async function getRosterHeadshots(league, abbr) {
-  const path = ESPN_PATH[league];
-  if (!path || !abbr) return new Map();
-  const json = await cachedFetchJson(
-    `espn:roster:${league}:${abbr}:v1`,
-    12 * 60 * 60,
-    `https://site.api.espn.com/apis/site/v2/sports/${path}/teams/${abbr.toLowerCase()}/roster`,
-    5000,
-  );
-  const map = new Map();
-  const groups = json?.athletes ?? [];
-  const flat = [];
-  for (const g of groups) {
-    if (Array.isArray(g?.items)) flat.push(...g.items);
-    else if (g?.fullName) flat.push(g);
-  }
-  for (const a of flat) {
-    const href = a?.headshot?.href ?? null;
-    if (a?.fullName && href) map.set(normName(a.fullName), href);
-  }
-  return map;
 }
 
 // Group raw prop rows into player+market+line buckets with over/under prices.

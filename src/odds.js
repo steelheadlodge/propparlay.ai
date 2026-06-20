@@ -45,6 +45,13 @@ async function fetchWithTimeout(url, ms) {
   }
 }
 
+export const ODDS_BASE = BASE;
+
+// Shared timeout fetch that records quota — exported for the futures module.
+export function oddsFetch(url, ms = 6000) {
+  return fetchWithTimeout(url, ms);
+}
+
 function bestPrice(outcomes) {
   // Highest American price across books for a given outcome name.
   return outcomes.reduce(

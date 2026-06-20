@@ -1,6 +1,7 @@
 import { getGames } from "./espn.js";
 import { getGameOdds, getPlayerProps, getOddsQuota, SPORT_KEYS } from "./odds.js";
 import { buildSlate } from "./slate.js";
+import { getFutures } from "./futures.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -221,6 +222,20 @@ export default {
       } catch (err) {
         console.error("slate failed", err);
         return jsonResponse({ configured: true, props: [], error: "Slate unavailable" }, 502);
+      }
+    }
+
+    // Futures board (championship / conference / division / win-total / award
+    // markets), edge-cached 12h — futures move slowly and this protects quota.
+    if (url.pathname === "/api/futures" && request.method === "GET") {
+      try {
+        const data = await cachedJson("futures:v1", 12 * 60 * 60, () =>
+          getFutures(env),
+        );
+        return jsonResponse(data);
+      } catch (err) {
+        console.error("futures failed", err);
+        return jsonResponse({ configured: true, markets: [], error: "Futures unavailable" }, 502);
       }
     }
 

@@ -1,0 +1,100 @@
+// Shared ESPN helpers: team logo + roster headshot resolvers (free, cached).
+// Used by both the live props slate and the futures board.
+
+export const ESPN_PATH = {
+  NBA: "basketball/nba",
+  NHL: "hockey/nhl",
+  NFL: "football/nfl",
+  MLB: "baseball/mlb",
+};
+
+export function normName(s) {
+  return (s ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function fetchJson(url, ms) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Edge-cached JSON fetch for the free ESPN endpoints (teams, rosters).
+export async function cachedFetchJson(cacheKey, ttlSeconds, url, ms) {
+  const cache = caches.default;
+  const req = new Request(`https://cache.propparlay.ai/${cacheKey}`);
+  const hit = await cache.match(req);
+  if (hit) return await hit.json();
+  const data = await fetchJson(url, ms);
+  if (data == null) return null;
+  const res = new Response(JSON.stringify(data), {
+    headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${ttlSeconds}` },
+  });
+  await cache.put(req, res.clone());
+  return data;
+}
+
+// league -> { byName: Map(normName -> {abbr, logo}), abbrLogo: Map }
+export async function getLeagueTeams(league) {
+  const path = ESPN_PATH[league];
+  if (!path) return null;
+  const json = await cachedFetchJson(
+    `espn:teams:${league}:v1`,
+    24 * 60 * 60,
+    `https://site.api.espn.com/apis/site/v2/sports/${path}/teams`,
+    5000,
+  );
+  const teams = json?.sports?.[0]?.leagues?.[0]?.teams ?? [];
+  const byName = new Map();
+  const abbrLogo = new Map();
+  for (const t of teams) {
+    const team = t.team ?? {};
+    const abbr = (team.abbreviation ?? "").toUpperCase();
+    const logo = team.logos?.[0]?.href ?? null;
+    if (!abbr) continue;
+    abbrLogo.set(abbr, logo);
+    // Index by every name variant so we can match a variety of feed labels
+    // (e.g. "Kansas City Chiefs", "Chiefs", "KC").
+    for (const n of [team.displayName, team.shortDisplayName, team.name, team.nickname, team.location, abbr]) {
+      if (n) byName.set(normName(n), { abbr, logo });
+    }
+  }
+  return { byName, abbrLogo };
+}
+
+// teamAbbr -> Map(normName -> headshotUrl)
+export async function getRosterHeadshots(league, abbr) {
+  const path = ESPN_PATH[league];
+  if (!path || !abbr) return new Map();
+  const json = await cachedFetchJson(
+    `espn:roster:${league}:${abbr}:v1`,
+    12 * 60 * 60,
+    `https://site.api.espn.com/apis/site/v2/sports/${path}/teams/${abbr.toLowerCase()}/roster`,
+    5000,
+  );
+  const map = new Map();
+  const groups = json?.athletes ?? [];
+  const flat = [];
+  for (const g of groups) {
+    if (Array.isArray(g?.items)) flat.push(...g.items);
+    else if (g?.fullName) flat.push(g);
+  }
+  for (const a of flat) {
+    const href = a?.headshot?.href ?? null;
+    if (a?.fullName && href) map.set(normName(a.fullName), href);
+  }
+  return map;
+}
