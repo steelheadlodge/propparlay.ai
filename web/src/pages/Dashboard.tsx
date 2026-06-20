@@ -7,7 +7,7 @@ import PropCard from "../components/PropCard";
 import SportIcon from "../components/SportIcon";
 import { allMockProps } from "../data/allMockProps";
 import { selectedLegs, useParlay } from "../context/ParlayContext";
-import { useOdds } from "../hooks/useOdds";
+import { useSlate } from "../hooks/useSlate";
 import { sportTheme } from "../lib/theme";
 import styles from "./Dashboard.module.css";
 
@@ -18,23 +18,30 @@ export default function Dashboard() {
   const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("ALL");
   const { legIds } = useParlay();
-  const odds = useOdds();
+  const slate = useSlate();
+
+  // Use live prop cards when the slate is configured and returns picks;
+  // otherwise fall back to the curated model preview set.
+  const isLive =
+    slate.status === "ready" && slate.configured && slate.props.length > 0;
+  const source = isLive ? slate.props : allMockProps;
+  const quota = slate.status === "ready" ? slate.quota : null;
 
   const sorted = useMemo(
-    () => [...allMockProps].sort((a, b) => b.edge - a.edge),
-    [],
+    () => [...source].sort((a, b) => b.edge - a.edge),
+    [source],
   );
   const visible =
     filter === "ALL" ? sorted : sorted.filter((p) => p.sport === filter);
-  const legs = selectedLegs(legIds, allMockProps);
+  const legs = selectedLegs(legIds, source);
   const highlighted = selectedPropId
     ? sorted.find((p) => p.id === selectedPropId)
     : null;
 
-  const topEdge = Math.max(...sorted.map((p) => p.edge));
-  const avgConfidence = Math.round(
-    sorted.reduce((s, p) => s + p.confidence, 0) / sorted.length,
-  );
+  const topEdge = sorted.length ? Math.max(...sorted.map((p) => p.edge)) : 0;
+  const avgConfidence = sorted.length
+    ? Math.round(sorted.reduce((s, p) => s + p.confidence, 0) / sorted.length)
+    : 0;
 
   return (
     <Layout
@@ -79,17 +86,22 @@ export default function Dashboard() {
       <div className={styles.pickHeader}>
         <div className={styles.pickTitleRow}>
           <h2 className={styles.sectionTitle}>Full pick cards</h2>
-          {odds.status === "ready" && (
+          {slate.status === "ready" && (
             <span
-              className={`${styles.oddsBadge} ${odds.configured ? styles.oddsLive : styles.oddsModel}`}
+              className={`${styles.oddsBadge} ${isLive ? styles.oddsLive : styles.oddsModel}`}
               title={
-                odds.configured
-                  ? "Live odds from The Odds API"
-                  : "Model projections — add ODDS_API_KEY for live lines"
+                isLive
+                  ? "Live player props from The Odds API — edge vs market consensus"
+                  : "Model preview — live props appear when games with posted props are on the board"
               }
             >
               <span className={styles.oddsDot} />
-              {odds.configured ? "Live odds" : "Model preview"}
+              {isLive ? "Live odds" : "Model preview"}
+            </span>
+          )}
+          {quota?.remaining != null && (
+            <span className={styles.quota} title="The Odds API monthly credits remaining">
+              {quota.remaining.toLocaleString()} credits left
             </span>
           )}
         </div>
@@ -149,7 +161,9 @@ export default function Dashboard() {
       </div>
 
       <p className={styles.footerNote}>
-        Preview — live odds API and account access coming next.
+        {isLive
+          ? "Live player props from The Odds API. Edge = best available price vs de-vigged market consensus."
+          : "Model preview — add an Odds API key (or wait for a game with posted props) to see live cards."}
       </p>
 
       <ParlaySlip legs={legs} />

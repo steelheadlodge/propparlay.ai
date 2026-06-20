@@ -19,11 +19,27 @@ export const PROP_MARKETS = {
   MLB: ["batter_total_bases", "batter_hits", "batter_home_runs"],
 };
 
+// Last-seen quota from The Odds API response headers. Module-scoped so the
+// worker can surface remaining credits to the app without an extra request.
+let lastQuota = { remaining: null, used: null };
+
+export function getOddsQuota() {
+  return lastQuota;
+}
+
+function recordQuota(res) {
+  const remaining = res.headers.get("x-requests-remaining");
+  const used = res.headers.get("x-requests-used");
+  if (remaining != null) lastQuota = { remaining: Number(remaining), used: used != null ? Number(used) : lastQuota.used };
+}
+
 async function fetchWithTimeout(url, ms) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
   try {
-    return await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal });
+    recordQuota(res);
+    return res;
   } finally {
     clearTimeout(timer);
   }

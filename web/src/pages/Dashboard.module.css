@@ -105,6 +105,16 @@
   border-color: rgba(251, 191, 36, 0.3);
 }
 
+.quota {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--gray);
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;

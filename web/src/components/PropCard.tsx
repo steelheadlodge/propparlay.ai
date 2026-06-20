@@ -26,7 +26,12 @@ export default function PropCard({ prop }: { prop: PropPick }) {
       {isTopPick && <span className={styles.topTag}>🔥 Top edge</span>}
 
       <div className={styles.top}>
-        <TeamAvatar team={prop.team} sport={prop.sport} />
+        <TeamAvatar
+          team={prop.team}
+          sport={prop.sport}
+          headshot={prop.headshot ?? null}
+          logoOverride={prop.teamLogo ?? null}
+        />
         <div className={styles.headInfo}>
           <div className={styles.meta}>
             <span className={styles.sportChip}>
@@ -45,7 +50,7 @@ export default function PropCard({ prop }: { prop: PropPick }) {
 
       <div className={styles.projection}>
         <div className={styles.projBlock}>
-          <span className={styles.label}>AI projection</span>
+          <span className={styles.label}>{prop.projectionLabel ?? "AI projection"}</span>
           <span className={styles.value}>
             {prop.aiProjection} {prop.unit}
           </span>

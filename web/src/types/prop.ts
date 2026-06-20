@@ -19,4 +19,9 @@ export type PropPick = {
   recommendation: "over" | "under";
   books: BookLine[];
   summary: string;
+  // Optional live-data extras (present on cards built from The Odds API).
+  teamLogo?: string | null;
+  headshot?: string | null;
+  projectionLabel?: string;
+  zone?: string;
 };

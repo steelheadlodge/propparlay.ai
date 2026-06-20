@@ -1,5 +1,6 @@
 import { getGames } from "./espn.js";
-import { getGameOdds, getPlayerProps, SPORT_KEYS } from "./odds.js";
+import { getGameOdds, getPlayerProps, getOddsQuota, SPORT_KEYS } from "./odds.js";
+import { buildSlate } from "./slate.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -204,10 +205,22 @@ export default {
         const data = await cachedJson("odds:games:v1", 120, () =>
           getGameOdds(env),
         );
-        return jsonResponse(data);
+        return jsonResponse({ ...data, quota: getOddsQuota() });
       } catch (err) {
         console.error("odds failed", err);
         return jsonResponse({ configured: true, events: [], error: "Odds unavailable" }, 502);
+      }
+    }
+
+    // Live prop slate (cards) from The Odds API, edge-cached 15 min to protect
+    // the request quota. Falls back to { configured: false } without a key.
+    if (url.pathname === "/api/slate" && request.method === "GET") {
+      try {
+        const data = await cachedJson("slate:v1", 900, () => buildSlate(env));
+        return jsonResponse(data);
+      } catch (err) {
+        console.error("slate failed", err);
+        return jsonResponse({ configured: true, props: [], error: "Slate unavailable" }, 502);
       }
     }
 

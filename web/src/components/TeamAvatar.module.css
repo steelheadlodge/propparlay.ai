@@ -28,3 +28,25 @@
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
 }
+
+.headshotWrap {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: radial-gradient(
+    circle at 50% 20%,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.03)
+  );
+  border: 1.5px solid;
+}
+
+.headshot {
+  width: 112%;
+  height: 112%;
+  object-fit: cover;
+  object-position: top center;
+}

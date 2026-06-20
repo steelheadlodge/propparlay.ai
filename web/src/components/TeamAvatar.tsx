@@ -6,14 +6,38 @@ export default function TeamAvatar({
   team,
   sport,
   size = 44,
+  headshot = null,
+  logoOverride = null,
 }: {
   team: string;
   sport: string;
   size?: number;
+  headshot?: string | null;
+  logoOverride?: string | null;
 }) {
   const [failed, setFailed] = useState(false);
+  const [headshotFailed, setHeadshotFailed] = useState(false);
   const color = teamColor(team);
-  const logo = espnLogoUrl(sport, team);
+  const logo = logoOverride ?? espnLogoUrl(sport, team);
+
+  // Prefer a player headshot when available; fall back to logo, then monogram.
+  if (headshot && !headshotFailed) {
+    return (
+      <span
+        className={styles.headshotWrap}
+        style={{ width: size, height: size, borderColor: `${color}88` }}
+        aria-hidden
+      >
+        <img
+          src={headshot}
+          alt=""
+          loading="lazy"
+          className={styles.headshot}
+          onError={() => setHeadshotFailed(true)}
+        />
+      </span>
+    );
+  }
 
   if (logo && !failed) {
     return (
