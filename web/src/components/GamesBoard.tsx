@@ -1,14 +1,30 @@
+import { needsLogoOutline } from "../lib/darkLogos";
 import { useGames } from "../hooks/useGames";
 import { sportTheme } from "../lib/theme";
 import type { GameSide, LiveGame } from "../types/game";
 import SportIcon from "./SportIcon";
 import styles from "./GamesBoard.module.css";
 
-function Side({ side, dim }: { side: GameSide; dim: boolean }) {
+function Side({
+  side,
+  league,
+  dim,
+}: {
+  side: GameSide;
+  league: string;
+  dim: boolean;
+}) {
   return (
     <div className={`${styles.side} ${dim ? styles.dim : ""}`}>
       {side.logo ? (
-        <img src={side.logo} alt="" className={styles.logo} loading="lazy" />
+        <img
+          src={side.logo}
+          alt=""
+          className={`${styles.logo} ${
+            needsLogoOutline(league, side.abbr) ? styles.logoOutline : ""
+          }`}
+          loading="lazy"
+        />
       ) : (
         <span className={styles.logoFallback}>{side.abbr}</span>
       )}
@@ -44,8 +60,16 @@ function GameTile({ game }: { game: LiveGame }) {
           <span className={styles.time}>{game.time}</span>
         )}
       </div>
-      <Side side={game.away} dim={game.status === "final" && !awayWon} />
-      <Side side={game.home} dim={game.status === "final" && !homeWon} />
+      <Side
+        side={game.away}
+        league={game.league}
+        dim={game.status === "final" && !awayWon}
+      />
+      <Side
+        side={game.home}
+        league={game.league}
+        dim={game.status === "final" && !homeWon}
+      />
     </div>
   );
 }
