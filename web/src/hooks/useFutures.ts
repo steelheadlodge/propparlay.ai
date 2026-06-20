@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FuturesMarket, FuturesQuota, FuturesResponse } from "../types/futures";
+import { apiUrl } from "../lib/config";
 
 type State =
   | { status: "loading" }
@@ -16,7 +17,7 @@ export function useFutures(): State {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/futures")
+    fetch(apiUrl("/api/futures"))
       .then((res) => res.json() as Promise<FuturesResponse>)
       .then((data) => {
         if (cancelled) return;

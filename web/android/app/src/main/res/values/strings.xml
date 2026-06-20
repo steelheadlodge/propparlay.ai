@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PropParlay</string>
+    <string name="title_activity_main">PropParlay</string>
+    <string name="package_name">ai.propparlay.app</string>
+    <string name="custom_url_scheme">ai.propparlay.app</string>
+</resources>

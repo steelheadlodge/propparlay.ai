@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { GamesResponse } from "../types/game";
+import { apiUrl } from "../lib/config";
 
 type State =
   | { status: "loading" }
@@ -11,7 +12,7 @@ export function useGames(): State {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/games")
+    fetch(apiUrl("/api/games"))
       .then((res) => {
         if (!res.ok) throw new Error(String(res.status));
         return res.json() as Promise<GamesResponse>;

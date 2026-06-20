@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { PropPick } from "../types/prop";
+import { apiUrl } from "../lib/config";
 
 export type SlateQuota = { remaining: number | null; used: number | null };
 
@@ -20,7 +21,7 @@ export function useSlate(): State {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/slate")
+    fetch(apiUrl("/api/slate"))
       .then((res) => res.json() as Promise<SlateResponse>)
       .then((data) => {
         if (cancelled) return;
