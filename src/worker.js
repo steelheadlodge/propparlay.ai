@@ -216,7 +216,7 @@ export default {
     // the request quota. Falls back to { configured: false } without a key.
     if (url.pathname === "/api/slate" && request.method === "GET") {
       try {
-        const data = await cachedJson("slate:v2", 900, () => buildSlate(env));
+        const data = await cachedJson("slate:v3", 900, () => buildSlate(env));
         return jsonResponse(data);
       } catch (err) {
         console.error("slate failed", err);

@@ -181,11 +181,16 @@ function analyzeBucket(b) {
   const prices = overFavored ? b.over : b.under;
   const best = prices.reduce((m, p) => (p.price > m.price ? p : m));
   const edge = (americanToDecimal(best.price) * fair - 1) * 100;
+  // Distinct books pricing this market — a proxy for liquidity. Lines quoted by
+  // several books are real, set-lineup props; one-book lines are often bench /
+  // prospect juice and get deprioritized.
+  const bookCount = new Set([...b.over, ...b.under].map((p) => p.book)).size;
 
   return {
     side: overFavored ? "over" : "under",
     confidence: fair * 100,
     edge,
+    bookCount,
     prices,
   };
 }
@@ -269,6 +274,8 @@ async function buildEventCards(env, event) {
 
     cards.push({
       id: `${event.id}:${nm}:${b.market}:${b.line}`,
+      bookCount: a.bookCount,
+      market_key: b.market,
       player: b.player,
       team,
       opponent,
@@ -321,11 +328,40 @@ export async function buildSlate(env) {
     const prev = byPlayer.get(key);
     if (!prev || c.confidence > prev.confidence) byPlayer.set(key, c);
   }
-  const deduped = [...byPlayer.values()].sort((a, b) => b.confidence - a.confidence);
+
+  // Rank liquid (multi-book) props first, then by confidence. Liquid lines are
+  // set-lineup props for players who'll actually play; single-book lines are
+  // often bench/prospect juice.
+  const ranked = [...byPlayer.values()].sort(
+    (a, b) => b.bookCount - a.bookCount || b.confidence - a.confidence,
+  );
+
+  // Diversify: cap cards per market so the slate isn't 15 of the same stat.
+  const PER_MARKET_CAP = 4;
+  const perMarket = new Map();
+  const picked = [];
+  for (const c of ranked) {
+    if (picked.length >= MAX_CARDS) break;
+    const n = perMarket.get(c.market_key) ?? 0;
+    if (n >= PER_MARKET_CAP) continue;
+    perMarket.set(c.market_key, n + 1);
+    picked.push(c);
+  }
+  // Backfill if caps left us short of MAX_CARDS.
+  if (picked.length < MAX_CARDS) {
+    const have = new Set(picked.map((c) => c.id));
+    for (const c of ranked) {
+      if (picked.length >= MAX_CARDS) break;
+      if (!have.has(c.id)) picked.push(c);
+    }
+  }
+
+  // Strip internal-only fields before returning.
+  const props = picked.map(({ bookCount, market_key, ...rest }) => rest);
 
   return {
     configured: true,
-    props: deduped.slice(0, MAX_CARDS),
+    props,
     quota: getOddsQuota(),
     events: events.length,
   };
