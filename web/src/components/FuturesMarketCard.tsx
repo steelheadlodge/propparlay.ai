@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
+import { isDarkLogo } from "../lib/darkLogos";
 import { HEAT_META, heatTier } from "../lib/futuresHeat";
 import { formatAmerican } from "../lib/odds";
 import { sportTheme } from "../lib/theme";
@@ -54,7 +55,9 @@ function OutcomeRow({
         <img
           src={outcome.logo}
           alt=""
-          className={styles.logo}
+          className={`${styles.logo} ${
+            isDarkLogo(market.league, outcome.abbr) ? styles.logoDark : ""
+          }`}
           loading="lazy"
           onError={() => setLogoFailed(true)}
         />

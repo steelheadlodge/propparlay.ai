@@ -6,6 +6,7 @@ import {
   formatAmerican,
   formatCurrency,
 } from "../lib/odds";
+import { isDarkLogo } from "../lib/darkLogos";
 import { buildParlayImage } from "../lib/parlayImage";
 import { shareUrl } from "../lib/shareParlay";
 import styles from "./FuturesSlip.module.css";
@@ -112,7 +113,13 @@ export default function FuturesSlip() {
                 {legs.map((l) => (
                   <li key={l.id} className={styles.leg}>
                     {l.logo ? (
-                      <img src={l.logo} alt="" className={styles.legLogo} />
+                      <img
+                        src={l.logo}
+                        alt=""
+                        className={`${styles.legLogo} ${
+                          isDarkLogo(l.league, l.abbr) ? styles.legLogoDark : ""
+                        }`}
+                      />
                     ) : (
                       <span className={styles.legLogoFallback}>
                         {(l.abbr ?? l.name).slice(0, 3)}

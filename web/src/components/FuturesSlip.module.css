@@ -92,6 +92,14 @@
   flex-shrink: 0;
 }
 
+.legLogoDark {
+  background: #1c2438;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 3px;
+  box-sizing: border-box;
+}
+
 .legLogoFallback {
   width: 28px;
   height: 28px;
