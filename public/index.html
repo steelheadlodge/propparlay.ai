@@ -378,19 +378,25 @@
     <style>
         /* Two-column hero (Option B — live grid) */
         .hero-split {
-            flex-direction: row;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-areas:
+                "head visual"
+                "pitch visual";
             align-items: center;
-            justify-content: center;
+            column-gap: 4rem;
+            row-gap: 1.25rem;
             text-align: left;
-            gap: 4rem;
-            flex-wrap: wrap;
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
         }
-        .hero-copy { flex: 1 1 440px; max-width: 580px; }
-        .hero-copy .badge { margin-bottom: 1.5rem; }
-        .hero-copy .waitlist-form { margin-left: 0; }
+        .hero-head { grid-area: head; align-self: end; max-width: 580px; }
+        .hero-pitch { grid-area: pitch; align-self: start; max-width: 580px; }
+        .hero-visual { grid-area: visual; align-self: center; }
+        .hero-head .badge { margin-bottom: 1.5rem; }
+        .hero-pitch .subtitle { margin-bottom: 2rem; }
+        .hero-pitch .waitlist-form { margin-left: 0; }
         .hero-eyebrow {
             display: inline-block;
             font-weight: 800;
@@ -492,10 +498,19 @@
         .lg-readout b { color: #f8fafc; }
         .lg-readout .am { color: #a78bfa; font-weight: 800; }
         @media (max-width: 900px) {
-            .hero-split { flex-direction: column; text-align: center; gap: 2.5rem; }
-            .hero-copy .waitlist-form { margin-left: auto; margin-right: auto; }
-            .hero-copy .badge { margin-left: auto; margin-right: auto; }
-            .hero-visual { order: -1; }
+            .hero-split {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "head"
+                    "visual"
+                    "pitch";
+                text-align: center;
+                row-gap: 2rem;
+                justify-items: center;
+            }
+            .hero-head, .hero-pitch { max-width: 100%; }
+            .hero-pitch .waitlist-form { margin-left: auto; margin-right: auto; }
+            .hero-head .badge { margin-left: auto; margin-right: auto; }
         }
     </style>
 </head>
@@ -521,7 +536,7 @@
     </nav>
 
     <section class="hero hero-split">
-        <div class="hero-copy">
+        <div class="hero-head">
             <div class="badge">Coming Soon - Early Access Available</div>
 
             <h1>
@@ -529,7 +544,9 @@
                 Futures as a<br>
                 <span class="gradient">heat map.</span>
             </h1>
+        </div>
 
+        <div class="hero-pitch">
             <p class="subtitle">
                 Pick a team down the side and one across the top — the cell where they
                 meet shows your cross-sport parlay's real odds and win chance.
