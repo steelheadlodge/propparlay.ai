@@ -5,6 +5,7 @@
   border-radius: 16px;
   padding: 1.1rem 1.2rem 0.6rem;
   overflow: hidden;
+  container-type: inline-size;
 }
 
 .card::before {
@@ -228,11 +229,25 @@
   text-decoration: underline;
 }
 
-@media (max-width: 640px) {
+/* Drop the heat bar when the card itself is narrow (e.g. two-up on tablets or
+   single column on phones), so the name + meta row never collide with it. */
+@container (max-width: 460px) {
   .row {
-    grid-template-columns: 16px 26px 1fr 42px 66px 20px;
+    grid-template-columns: 18px 28px 1fr 44px 72px 22px;
   }
   .heatBarTrack {
     display: none;
+  }
+}
+
+/* Fallback for browsers without container query support. */
+@supports not (container-type: inline-size) {
+  @media (max-width: 640px) {
+    .row {
+      grid-template-columns: 18px 28px 1fr 44px 72px 22px;
+    }
+    .heatBarTrack {
+      display: none;
+    }
   }
 }
