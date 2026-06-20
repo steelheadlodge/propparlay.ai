@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import AnimatedNumber from "../components/AnimatedNumber";
 import FuturesMarketCard from "../components/FuturesMarketCard";
 import FuturesSlip from "../components/FuturesSlip";
 import Layout from "../components/Layout";
@@ -9,6 +8,11 @@ import SportIcon from "../components/SportIcon";
 import type { FuturesLeg } from "../context/FuturesParlayContext";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
 import { useFutures } from "../hooks/useFutures";
+import {
+  americanToDecimal,
+  decimalToAmerican,
+  formatAmerican,
+} from "../lib/odds";
 import { decodeParlay } from "../lib/shareParlay";
 import { sportTheme } from "../lib/theme";
 import type { FuturesMarket } from "../types/futures";
@@ -41,7 +45,7 @@ function buildExampleLegs(markets: FuturesMarket[]): FuturesLeg[] {
 
 export default function Futures() {
   const state = useFutures();
-  const { legs: slipLegs, hydrate } = useFuturesParlay();
+  const { hydrate } = useFuturesParlay();
   const hydrated = useRef(false);
   const [sharedNames, setSharedNames] = useState<string[] | null>(null);
   const [league, setLeague] = useState<string>("ALL");
@@ -62,23 +66,17 @@ export default function Futures() {
 
   const markets = state.status === "ready" ? state.markets : [];
 
-  const topPick = useMemo(() => {
-    let best:
-      | { name: string; pct: number; league: string; title: string }
-      | null = null;
-    for (const m of markets) {
-      const o = m.outcomes[0];
-      if (o && (!best || o.fairPct > best.pct)) {
-        best = {
-          name: o.displayName ?? o.name,
-          pct: o.fairPct,
-          league: m.league,
-          // Trim the trailing "Winner" so "World Series Winner" reads cleanly.
-          title: m.title.replace(/\s*winner$/i, ""),
-        };
-      }
-    }
-    return best;
+  // A concrete two-team, cross-sport example used to teach the core idea:
+  // bet multiple title favorites at once for one combined payout.
+  const example = useMemo(() => {
+    const legs = buildExampleLegs(markets);
+    if (legs.length < 2) return null;
+    const decimal = legs.reduce((d, l) => d * americanToDecimal(l.price), 1);
+    return {
+      legs,
+      american: decimalToAmerican(decimal),
+      names: legs.map((l) => l.displayName ?? l.name),
+    };
   }, [markets]);
 
   const leagues = useMemo(
@@ -110,31 +108,26 @@ export default function Futures() {
         </a>
       )}
 
-      {markets.length > 0 && (
-        <div className={styles.headline}>
+      {example && (
+        <button
+          type="button"
+          className={styles.headline}
+          onClick={() => hydrate(example.legs)}
+        >
           <span className={styles.headlineHook}>
             <span className={styles.headlineFlame}>🔥</span>
-            {topPick ? (
-              <span>
-                <strong>{topPick.name}</strong> — favorite to win the{" "}
-                {topPick.title}
-                <span className={styles.headlinePct}>
-                  <AnimatedNumber value={topPick.pct} decimals={1} suffix="%" />{" "}
-                  real shot
-                </span>
+            <span className={styles.headlineText}>
+              The whole idea: back two teams at once. Parlay the{" "}
+              <strong>{example.names[0]}</strong> &amp;{" "}
+              <strong>{example.names[1]}</strong> into one ticket that pays{" "}
+              <span className={styles.headlineOdds}>
+                {formatAmerican(example.american)}
               </span>
-            ) : (
-              <span>
-                Cross-sport title futures — every pick at its{" "}
-                <strong>real, de-vigged win chance</strong>
-              </span>
-            )}
+              .
+            </span>
           </span>
-          <span className={styles.headlineMeta}>
-            <AnimatedNumber value={markets.length} /> markets ·{" "}
-            <AnimatedNumber value={leagues.length} /> leagues live
-          </span>
-        </div>
+          <span className={styles.headlineCta}>Load this parlay →</span>
+        </button>
       )}
 
       {state.status === "loading" ? (
@@ -155,21 +148,6 @@ export default function Futures() {
       ) : (
         <>
           <SmartPicks markets={markets} />
-
-          {slipLegs.length === 0 && (
-            <button
-              type="button"
-              className={styles.exampleCta}
-              onClick={() => hydrate(buildExampleLegs(markets))}
-            >
-              <span className={styles.exampleIcon}>✨</span>
-              <span>
-                New to futures?{" "}
-                <strong>Load an example cross-sport parlay</strong> to see how it
-                works.
-              </span>
-            </button>
-          )}
 
           {leagues.length > 1 && (
             <div className={styles.filters}>

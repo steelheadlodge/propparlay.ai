@@ -176,14 +176,28 @@
 .lockSelect {
   flex: 1;
   min-width: 200px;
-  padding: 0.55rem 0.7rem;
+  padding: 0.55rem 2rem 0.55rem 0.7rem;
   border-radius: 11px;
   border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
-  background: var(--dark-card, #111827);
+  background-color: var(--dark-card, #111827);
   color: #e5e7eb;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  /* Hide the default (near-black, invisible) arrow and draw a light chevron. */
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 0.85rem;
+}
+
+/* The native option list renders with the OS palette; keep it readable. */
+.lockSelect option,
+.lockSelect optgroup {
+  color: #e5e7eb;
+  background-color: #111827;
 }
 
 .lockSelect:focus {
