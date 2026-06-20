@@ -1,0 +1,168 @@
+.card {
+  position: relative;
+  background: var(--dark-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem 1.2rem 0.6rem;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--sport-color, var(--primary));
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.league {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--sport-color, #a5b4fc);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 18px 30px 1fr 70px 44px 56px 22px;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.5rem 0.55rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-left: 3px solid var(--heat, transparent);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rowActive {
+  background: color-mix(in srgb, var(--heat) 14%, transparent);
+  border-color: color-mix(in srgb, var(--heat) 45%, transparent);
+}
+
+.rank {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray);
+  text-align: center;
+}
+
+.logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.logoFallback {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+}
+
+.name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heatBarTrack {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.heatBar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--heat, var(--primary));
+}
+
+.fair {
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--heat, #e2e8f0);
+  text-align: right;
+}
+
+.price {
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: #e2e8f0;
+}
+
+.add {
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--heat, var(--primary));
+}
+
+.more {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--sport-color, #a5b4fc);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.more:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 16px 26px 1fr 44px 50px 20px;
+  }
+  .heatBarTrack {
+    display: none;
+  }
+}

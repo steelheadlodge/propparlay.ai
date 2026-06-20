@@ -52,6 +52,35 @@
   color: var(--light);
 }
 
+.tab {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--light);
+}
+
+.tabActive {
+  color: var(--light);
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+@media (max-width: 560px) {
+  .navLink {
+    display: none;
+  }
+  .nav {
+    gap: 0.5rem;
+  }
+}
+
 .shell {
   position: relative;
   z-index: 1;

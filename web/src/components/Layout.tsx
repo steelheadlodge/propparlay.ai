@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { NavLink } from "react-router-dom";
 import styles from "./Layout.module.css";
 
 export default function Layout({
@@ -13,10 +14,27 @@ export default function Layout({
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <a href="/" className={styles.logo}>
+        <NavLink to="/" className={styles.logo}>
           PropParlay<span>.ai</span>
-        </a>
+        </NavLink>
         <nav className={styles.nav}>
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `${styles.tab} ${isActive ? styles.tabActive : ""}`
+            }
+          >
+            Futures
+          </NavLink>
+          <NavLink
+            to="/tonight"
+            className={({ isActive }) =>
+              `${styles.tab} ${isActive ? styles.tabActive : ""}`
+            }
+          >
+            Tonight
+          </NavLink>
           <span className={styles.previewBadge}>Preview</span>
           <a href="/" className={styles.navLink}>Landing</a>
         </nav>

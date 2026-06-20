@@ -1,0 +1,105 @@
+import { useMemo } from "react";
+import FuturesMarketCard from "../components/FuturesMarketCard";
+import FuturesSlip from "../components/FuturesSlip";
+import Layout from "../components/Layout";
+import { useFutures } from "../hooks/useFutures";
+import styles from "./Futures.module.css";
+
+export default function Futures() {
+  const state = useFutures();
+
+  const markets = state.status === "ready" ? state.markets : [];
+  const quota = state.status === "ready" ? state.quota : null;
+
+  const topPick = useMemo(() => {
+    let best: { name: string; pct: number; league: string } | null = null;
+    for (const m of markets) {
+      const o = m.outcomes[0];
+      if (o && (!best || o.fairPct > best.pct)) {
+        best = { name: o.name, pct: o.fairPct, league: m.league };
+      }
+    }
+    return best;
+  }, [markets]);
+
+  const leagues = useMemo(
+    () => [...new Set(markets.map((m) => m.league))],
+    [markets],
+  );
+
+  return (
+    <Layout
+      title="Futures parlay lab"
+      subtitle="Build a cross-sport title parlay — World Series, Super Bowl, Stanley Cup and more. Odds are de-vigged to true win probability."
+    >
+      <div className={styles.stats}>
+        <div className={styles.stat}>
+          <span className={styles.statIcon}>🏆</span>
+          <div>
+            <span className={styles.statValue}>{markets.length}</span>
+            <span className={styles.statLabel}>Markets live</span>
+          </div>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statIcon}>🥇</span>
+          <div>
+            <span className={styles.statValue}>
+              {topPick ? `${topPick.pct}%` : "—"}
+            </span>
+            <span className={styles.statLabel}>
+              {topPick ? `Top favorite · ${topPick.name}` : "Top favorite"}
+            </span>
+          </div>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statIcon}>🌐</span>
+          <div>
+            <span className={styles.statValue}>{leagues.length}</span>
+            <span className={styles.statLabel}>Leagues</span>
+          </div>
+        </div>
+        {quota?.remaining != null && (
+          <div className={styles.stat}>
+            <span className={styles.statIcon}>⚡</span>
+            <div>
+              <span className={styles.statValue}>
+                {quota.remaining.toLocaleString()}
+              </span>
+              <span className={styles.statLabel}>Odds credits left</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {state.status === "loading" ? (
+        <div className={styles.grid}>
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className={`${styles.skeleton}`} />
+          ))}
+        </div>
+      ) : state.status === "error" || !state.configured ? (
+        <p className={styles.note}>
+          Live futures are warming up. Check back shortly.
+        </p>
+      ) : markets.length === 0 ? (
+        <p className={styles.note}>
+          No futures markets are posted right now. Championship odds populate as
+          books open them for the upcoming seasons.
+        </p>
+      ) : (
+        <div className={styles.grid}>
+          {markets.map((m) => (
+            <FuturesMarketCard key={m.key} market={m} />
+          ))}
+        </div>
+      )}
+
+      <p className={styles.footerNote}>
+        Live championship odds via The Odds API, de-vigged to a true win
+        probability. Build a parlay, then place it at your own book.
+      </p>
+
+      <FuturesSlip />
+    </Layout>
+  );
+}
