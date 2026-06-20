@@ -92,12 +92,9 @@
   flex-shrink: 0;
 }
 
-.legLogoDark {
-  background: #1c2438;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 3px;
-  box-sizing: border-box;
+.legLogoOutline {
+  filter: drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
 }
 
 .legLogoFallback {

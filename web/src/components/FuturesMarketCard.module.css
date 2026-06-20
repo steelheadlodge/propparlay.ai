@@ -85,14 +85,11 @@
   object-fit: contain;
 }
 
-/* Subtle charcoal plate behind dark/black logos so they don't vanish on the
-   dark card. No white circle — just a faintly-lifted dark tile. */
-.logoDark {
-  background: #1c2438;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 7px;
-  padding: 3px;
-  box-sizing: border-box;
+/* Thin white outline that hugs the logo silhouette so dark/low-contrast crests
+   read on the dark card. No plate, no ring. */
+.logoOutline {
+  filter: drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
 }
 
 .logoFallback {
