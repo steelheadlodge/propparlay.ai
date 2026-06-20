@@ -19,6 +19,7 @@ const DARK_LOGOS = new Set<string>([
   "NFL:BAL", // Ravens
   "NFL:NO", // Saints
   "NFL:CIN", // Bengals
+  "NFL:PHI", // Eagles (midnight green / black)
   // MLB
   "MLB:CHW", // White Sox
   "MLB:SF", // Giants
