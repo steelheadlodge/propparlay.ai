@@ -64,12 +64,14 @@ export async function getLeagueTeams(league) {
     const team = t.team ?? {};
     const abbr = (team.abbreviation ?? "").toUpperCase();
     const logo = team.logos?.[0]?.href ?? null;
+    // ESPN "name" is the nickname (e.g. "Dodgers"); fall back to short label.
+    const nick = team.name ?? team.shortDisplayName ?? team.nickname ?? null;
     if (!abbr) continue;
     abbrLogo.set(abbr, logo);
     // Index by every name variant so we can match a variety of feed labels
     // (e.g. "Kansas City Chiefs", "Chiefs", "KC").
     for (const n of [team.displayName, team.shortDisplayName, team.name, team.nickname, team.location, abbr]) {
-      if (n) byName.set(normName(n), { abbr, logo });
+      if (n) byName.set(normName(n), { abbr, logo, nick });
     }
   }
   return { byName, abbrLogo };

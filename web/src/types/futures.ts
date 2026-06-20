@@ -1,5 +1,6 @@
 export type FuturesOutcome = {
   name: string;
+  displayName?: string;
   abbr: string | null;
   logo: string | null;
   price: number;

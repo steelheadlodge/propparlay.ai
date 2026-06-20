@@ -87,6 +87,9 @@ async function fetchMarket(apiKey, sport, teams) {
       const team = teams?.byName.get(normName(r.name)) ?? null;
       return {
         name: r.name,
+        // Team outcomes show the nickname (logo carries the city); player /
+        // award outcomes keep their full name.
+        displayName: team?.nick ?? r.name,
         abbr: team?.abbr ?? null,
         logo: team?.logo ?? null,
         price: r.best.price,

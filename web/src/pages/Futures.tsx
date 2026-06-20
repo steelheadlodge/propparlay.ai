@@ -26,6 +26,7 @@ function buildExampleLegs(markets: FuturesMarket[]): FuturesLeg[] {
       marketKey: m.key,
       marketTitle: m.title,
       name: o.name,
+      displayName: o.displayName,
       abbr: o.abbr,
       logo: o.logo,
       price: o.price,

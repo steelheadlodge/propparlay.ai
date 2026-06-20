@@ -7,6 +7,7 @@ export type FuturesLeg = {
   marketKey: string;
   marketTitle: string;
   name: string;
+  displayName?: string;
   abbr: string | null;
   logo: string | null;
   price: number;

@@ -132,7 +132,9 @@ export default function FuturesSlip() {
                       </span>
                     )}
                     <span className={styles.legText}>
-                      <span className={styles.legName}>{l.name}</span>
+                      <span className={styles.legName}>
+                        {l.displayName ?? l.name}
+                      </span>
                       <span className={styles.legMarket}>
                         {l.league} · {l.marketTitle}
                       </span>

@@ -42,6 +42,7 @@ function OutcomeRow({
           marketKey: market.key,
           marketTitle: market.title,
           name: outcome.name,
+          displayName: outcome.displayName,
           abbr: outcome.abbr,
           logo: outcome.logo,
           price: outcome.price,
@@ -69,7 +70,9 @@ function OutcomeRow({
         </span>
       )}
       <span className={styles.nameWrap}>
-        <span className={styles.name}>{outcome.name}</span>
+        <span className={styles.name}>
+          {outcome.displayName ?? outcome.name}
+        </span>
         <span className={styles.metaRow}>
           <span className={styles.tier}>{meta.label}</span>
           {outcome.books >= 2 && (
