@@ -121,6 +121,9 @@ function jsonResponse(data, status = 200) {
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "public, max-age=30",
+      // Public read-only data. Allow the native apps (capacitor://localhost,
+      // http://localhost on Android) and any origin to read the API.
+      "Access-Control-Allow-Origin": "*",
     },
   });
 }

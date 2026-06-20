@@ -15,3 +15,8 @@ web/*.png
 web/dist/
 web/ios/App/App/public/
 web/android/app/src/main/assets/public/
+web/ios/App/build/
+
+# Raw (unframed) device captures — local working files. Final framed App Store
+# screenshots in store/iphone-6.9 and store/ipad-13 are committed.
+store/raw/
