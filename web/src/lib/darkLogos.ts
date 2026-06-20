@@ -25,6 +25,9 @@ const DARK_LOGOS = new Set<string>([
   "MLB:SF", // Giants
   "MLB:PIT", // Pirates
   "MLB:COL", // Rockies
+  "MLB:NYY", // Yankees (navy)
+  "MLB:SD", // Padres (brown/navy)
+  "MLB:TB", // Rays (navy)
 ]);
 
 export function isDarkLogo(
