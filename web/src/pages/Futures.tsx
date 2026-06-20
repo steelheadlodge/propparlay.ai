@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import FuturesMarketCard from "../components/FuturesMarketCard";
 import FuturesSlip from "../components/FuturesSlip";
 import Layout from "../components/Layout";
@@ -29,8 +30,8 @@ export default function Futures() {
 
   return (
     <Layout
-      title="Futures parlay lab"
-      subtitle="Build a cross-sport title parlay — World Series, Super Bowl, Stanley Cup and more. Odds are de-vigged to true win probability."
+      title="The future of parlays"
+      subtitle="Stack cross-sport title bets — World Series, Super Bowl, Stanley Cup and more — at de-vigged true odds. The first parlay lab built around futures."
     >
       <div className={styles.stats}>
         <div className={styles.stat}>
@@ -93,6 +94,18 @@ export default function Futures() {
           ))}
         </div>
       )}
+
+      <Link to="/tonight" className={styles.crossLink}>
+        <span className={styles.crossIcon}>🎯</span>
+        <span className={styles.crossText}>
+          <strong>Tonight's slate is live too</strong>
+          <span>
+            Nightly AI player props, hot zones & line shopping across NBA, NHL,
+            NFL & MLB
+          </span>
+        </span>
+        <span className={styles.crossArrow}>→</span>
+      </Link>
 
       <p className={styles.footerNote}>
         Live championship odds via The Odds API, de-vigged to a true win

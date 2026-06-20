@@ -72,6 +72,54 @@
   font-size: 0.9rem;
 }
 
+.crossLink {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.3rem;
+  margin: 0.5rem 0 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.14),
+    rgba(16, 185, 129, 0.1)
+  );
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 14px;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.crossLink:hover {
+  border-color: rgba(99, 102, 241, 0.55);
+  transform: translateY(-1px);
+}
+
+.crossIcon {
+  font-size: 1.6rem;
+}
+
+.crossText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.crossText strong {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--light);
+}
+
+.crossText span {
+  font-size: 0.8rem;
+  color: var(--gray);
+}
+
+.crossArrow {
+  font-size: 1.3rem;
+  color: #a5b4fc;
+}
+
 .footerNote {
   margin-top: 0.5rem;
   margin-bottom: 6rem;
