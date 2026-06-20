@@ -427,11 +427,11 @@
         }
         .livegrid-legend {
             font-size: 0.74rem;
-            color: var(--gray);
+            color: #cbd5e1;
             line-height: 1.45;
             margin-bottom: 0.75rem;
         }
-        .livegrid-legend strong { color: #34d399; }
+        .livegrid-legend strong { color: #4ade80; }
         .lg {
             display: grid;
             grid-template-columns: 74px repeat(4, 1fr);
@@ -765,7 +765,7 @@
             }
             const heat = (p) => {
                 const t = hi > lo ? (p - lo) / (hi - lo) : 0;
-                return `rgba(52, 211, 153, ${(0.06 + t * 0.6).toFixed(3)})`;
+                return `rgba(52, 211, 153, ${(0.12 + t * 0.82).toFixed(3)})`;
             };
 
             const corner = document.createElement('div');
