@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
+import Logo from "./Logo";
 import styles from "./Layout.module.css";
 
 export default function Layout({
@@ -14,8 +15,8 @@ export default function Layout({
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <NavLink to="/" className={styles.logo}>
-          PropParlay<span>.ai</span>
+        <NavLink to="/" className={styles.logo} aria-label="prop parlay ai — home">
+          <Logo />
         </NavLink>
         <nav className={styles.nav}>
           <NavLink
@@ -43,7 +44,6 @@ export default function Layout({
           >
             Tonight
           </NavLink>
-          <span className={styles.previewBadge}>Preview</span>
           <a href="/" className={styles.navLink}>Landing</a>
         </nav>
       </header>

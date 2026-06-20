@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/app/icon.svg">
+    <link rel="apple-touch-icon" href="/app/apple-touch-icon.png">
+    <meta name="theme-color" content="#0b0b0f">
     <style>
         * {
             margin: 0;
@@ -81,18 +84,25 @@
         }
 
         .logo {
-            font-size: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-size: 1.35rem;
             font-weight: 800;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            letter-spacing: -0.01em;
+            text-decoration: none;
         }
 
-        .logo span {
-            color: var(--light);
-            -webkit-text-fill-color: var(--light);
+        .logo .lo-mark {
+            display: block;
+            flex: 0 0 auto;
+            transform: translateY(2px);
         }
+
+        .logo .lo-word { white-space: nowrap; }
+        .logo b { color: #8b5cf6; font-weight: 800; }
+        .logo i { color: var(--light); font-style: normal; font-weight: 800; }
+        .logo em { color: var(--gray); font-style: normal; font-weight: 700; font-size: 0.78em; }
 
         .nav-cta {
             padding: 0.75rem 1.5rem;
@@ -326,6 +336,27 @@
                 padding: 1rem;
             }
 
+            .logo {
+                gap: 0.45rem;
+            }
+
+            .logo .lo-word {
+                font-size: 0.95rem;
+            }
+
+            .nav-cta {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            nav > div {
+                gap: 0.4rem !important;
+            }
+
+            .cta-app {
+                display: none;
+            }
+
             .hero {
                 padding: 6rem 1rem 2rem;
             }
@@ -350,9 +381,18 @@
     <div class="bg-glow"></div>
 
     <nav>
-        <div class="logo">PropParlay<span>.ai</span></div>
+        <a href="/" class="logo" aria-label="prop parlay ai — home">
+            <svg class="lo-mark" width="32" height="32" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                <rect width="64" height="64" rx="15" fill="#0b0b0f"></rect>
+                <g font-family="Inter, system-ui, sans-serif" font-weight="800" text-anchor="middle">
+                    <text x="23" y="45" font-size="40" fill="#8b5cf6">P</text>
+                    <text x="41" y="45" font-size="40" fill="#f8fafc">P</text>
+                </g>
+            </svg>
+            <span class="lo-word"><b>prop</b> <i>parlay</i> <em>ai</em></span>
+        </a>
         <div style="display:flex;align-items:center;gap:1rem;">
-            <a href="/app/" class="nav-cta" style="text-decoration:none;display:inline-block;">Preview App</a>
+            <a href="/app/" class="nav-cta" style="text-decoration:none;display:inline-block;">Preview<span class="cta-app">&nbsp;App</span></a>
             <button class="nav-cta" onclick="document.getElementById('email').focus()">Join Waitlist</button>
         </div>
     </nav>

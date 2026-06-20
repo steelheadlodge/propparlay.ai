@@ -1,0 +1,44 @@
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.mark {
+  display: block;
+  flex: 0 0 auto;
+  /* Heavy square sits below dead-center for optical balance with text. */
+  transform: translateY(2px);
+}
+
+.word {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.prop {
+  color: #8b5cf6;
+}
+
+.parlay {
+  color: #f8fafc;
+}
+
+.ai {
+  color: #94a3b8;
+  font-size: 0.8em;
+}
+
+/* Phones: keep the full lockup, just slightly condensed so it never wraps. */
+@media (max-width: 640px) {
+  .word {
+    font-size: 1rem;
+  }
+  .lockup {
+    gap: 0.45rem;
+  }
+}

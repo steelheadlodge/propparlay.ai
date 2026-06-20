@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support — prop parlay ai</title>
+    <meta name="description" content="Get help with PropParlay.ai — contact, FAQ, and responsible play resources.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/app/icon.svg">
+    <meta name="theme-color" content="#0b0b0f">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --dark: #0f172a;
+            --panel: #1e293b;
+            --gray: #94a3b8;
+            --light: #f8fafc;
+            --purple: #8b5cf6;
+            --border: rgba(148, 163, 184, 0.15);
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+        .nav {
+            position: sticky; top: 0; z-index: 10;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .logo { display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.01em; }
+        .logo .lo-mark { display: block; flex: 0 0 auto; transform: translateY(2px); }
+        .logo b { color: var(--purple); }
+        .logo i { color: var(--light); font-style: normal; }
+        .logo em { color: var(--gray); font-style: normal; font-size: 0.78em; }
+        .back { color: var(--gray); text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+        .back:hover { color: var(--light); }
+        main { max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .sub { color: var(--gray); margin-bottom: 2.5rem; }
+        h2 { font-size: 1.2rem; font-weight: 700; margin: 2rem 0 0.75rem; }
+        p, li { color: #cbd5e1; margin-bottom: 0.85rem; }
+        a { color: var(--purple); }
+        .card {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .card h2 { margin-top: 0; }
+        .email-btn {
+            display: inline-block; margin-top: 0.5rem; padding: 0.7rem 1.25rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+            border-radius: 10px; text-decoration: none; font-weight: 700;
+        }
+        .faq-q { font-weight: 700; color: var(--light); margin: 1.25rem 0 0.25rem; }
+        footer { border-top: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center; color: var(--gray); font-size: 0.85rem; }
+        footer a { margin: 0 0.5rem; }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="/" class="logo" aria-label="prop parlay ai — home">
+            <svg class="lo-mark" width="30" height="30" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                <rect width="64" height="64" rx="15" fill="#0b0b0f"></rect>
+                <g font-family="Inter, system-ui, sans-serif" font-weight="800" text-anchor="middle">
+                    <text x="23" y="45" font-size="40" fill="#8b5cf6">P</text>
+                    <text x="41" y="45" font-size="40" fill="#f8fafc">P</text>
+                </g>
+            </svg>
+            <span><b>prop</b> <i>parlay</i> <em>ai</em></span>
+        </a>
+        <a href="/" class="back">&larr; Home</a>
+    </nav>
+
+    <main>
+        <h1>Support</h1>
+        <p class="sub">We're a small team and we read every message.</p>
+
+        <div class="card">
+            <h2>Contact us</h2>
+            <p>The fastest way to reach us is email. We typically reply within 1–2 business days.</p>
+            <a class="email-btn" href="mailto:support@propparlay.ai">Email support@propparlay.ai</a>
+        </div>
+
+        <div class="card">
+            <h2>Frequently asked</h2>
+
+            <p class="faq-q">What is PropParlay?</p>
+            <p>PropParlay is an information tool for sports bettors. We show futures and game odds, each team's real win chance, and AI-assisted parlay suggestions across sports.</p>
+
+            <p class="faq-q">Can I place bets in the app?</p>
+            <p>No. PropParlay does not accept wagers, hold money, or process bets. It is for research and entertainment only.</p>
+
+            <p class="faq-q">Are the picks guaranteed?</p>
+            <p>No. Our suggestions are based on live market odds and models — they are guidance, not a guaranteed outcome. Always bet responsibly and within your means.</p>
+
+            <p class="faq-q">Where does the data come from?</p>
+            <p>Odds and scores come from licensed sports-data providers (including The Odds API), and team logos/imagery from ESPN. Markets update throughout the day.</p>
+
+            <p class="faq-q">Do I need an account?</p>
+            <p>Not for the core experience. If you joined the waitlist, we'll email you about early access.</p>
+
+            <p class="faq-q">How do I delete my data?</p>
+            <p>Email <a href="mailto:support@propparlay.ai">support@propparlay.ai</a> and we'll remove your information promptly. See our <a href="/privacy">Privacy Policy</a> for details.</p>
+        </div>
+
+        <div class="card">
+            <h2>Responsible play</h2>
+            <p>You must be <strong>18 or older</strong> (or the legal age where you live) to use PropParlay. Betting involves real financial risk. If gambling is becoming a problem for you or someone you know, help is available 24/7:</p>
+            <ul>
+                <li>Call or text <strong>1-800-GAMBLER</strong></li>
+                <li><a href="https://www.ncpgambling.org/" target="_blank" rel="noopener">National Council on Problem Gambling</a></li>
+            </ul>
+        </div>
+    </main>
+
+    <footer>
+        <a href="/">Home</a> · <a href="/privacy">Privacy</a> · <a href="/support">Support</a>
+        <div style="margin-top:0.75rem;">&copy; 2026 PropParlay.ai · For ages 18+ · Informational use only</div>
+    </footer>
+</body>
+</html>
