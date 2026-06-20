@@ -111,6 +111,62 @@ function distinctBooks(arr) {
   return Array.isArray(arr) ? new Set(arr.map((p) => p.book)).size : 0;
 }
 
+// Market-driven line movement: snapshot each outcome's "opening" best price in
+// KV the first time we see it, then report how far the price has moved since.
+// This is honest day-one data (it comes from the books, not our users) and only
+// runs on a cache miss (~2x/day), so KV traffic is negligible.
+const OPENS_KEY = "futures:opens";
+const OPEN_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // re-baseline after 30 days
+const MIN_MOVE_PTS = 0.5; // ignore sub-half-point noise
+
+async function attachMovement(env, markets) {
+  if (!env?.WAITLIST) return;
+
+  let opens = {};
+  try {
+    const raw = await env.WAITLIST.get(OPENS_KEY);
+    if (raw) opens = JSON.parse(raw);
+  } catch {
+    opens = {};
+  }
+
+  const now = Date.now();
+  let changed = false;
+
+  for (const m of markets) {
+    for (const o of m.outcomes) {
+      const key = `${m.key}|${o.name}`;
+      const base = opens[key];
+
+      if (!base || now - base.ts > OPEN_MAX_AGE_MS) {
+        opens[key] = { price: o.price, ts: now };
+        changed = true;
+        continue; // first capture — no movement to show yet
+      }
+
+      if (base.price !== o.price) {
+        // Movement in implied-probability points (positive = odds shortened).
+        const pts =
+          Math.round((impliedProb(o.price) - impliedProb(base.price)) * 1000) /
+          10;
+        if (Math.abs(pts) >= MIN_MOVE_PTS) {
+          o.openPrice = base.price;
+          o.move = pts > 0 ? "up" : "down";
+          o.movePts = Math.abs(pts);
+        }
+      }
+    }
+  }
+
+  if (changed) {
+    try {
+      await env.WAITLIST.put(OPENS_KEY, JSON.stringify(opens));
+    } catch {
+      /* best-effort snapshot */
+    }
+  }
+}
+
 export async function getFutures(env) {
   const apiKey = env.ODDS_API_KEY;
   if (!apiKey) return { configured: false, markets: [], quota: null };
@@ -149,6 +205,8 @@ export async function getFutures(env) {
       markets.push(r.value);
     }
   }
+
+  await attachMovement(env, markets).catch(() => {});
 
   return { configured: true, markets, quota: getOddsQuota() };
 }

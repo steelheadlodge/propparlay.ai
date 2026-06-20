@@ -119,6 +119,13 @@
   text-overflow: ellipsis;
 }
 
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
 .tier {
   width: fit-content;
   font-size: 0.58rem;
@@ -129,6 +136,28 @@
   border-radius: 999px;
   color: var(--heat, #94a3b8);
   background: color-mix(in srgb, var(--heat) 16%, transparent);
+}
+
+.books {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+.move {
+  font-size: 0.58rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.moveUp {
+  color: #34d399;
+}
+
+.moveDown {
+  color: #94a3b8;
 }
 
 .heatBarTrack {

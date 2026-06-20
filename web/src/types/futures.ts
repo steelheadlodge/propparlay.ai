@@ -6,6 +6,9 @@ export type FuturesOutcome = {
   book: string;
   fairPct: number;
   books: number;
+  openPrice?: number;
+  move?: "up" | "down";
+  movePts?: number;
 };
 
 export type FuturesMarket = {

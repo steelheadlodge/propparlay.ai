@@ -70,7 +70,31 @@ function OutcomeRow({
       )}
       <span className={styles.nameWrap}>
         <span className={styles.name}>{outcome.name}</span>
-        <span className={styles.tier}>{meta.label}</span>
+        <span className={styles.metaRow}>
+          <span className={styles.tier}>{meta.label}</span>
+          {outcome.books >= 2 && (
+            <span
+              className={styles.books}
+              title={`Priced across ${outcome.books} sportsbooks`}
+            >
+              {outcome.books} books
+            </span>
+          )}
+          {outcome.move && outcome.openPrice != null && (
+            <span
+              className={`${styles.move} ${
+                outcome.move === "up" ? styles.moveUp : styles.moveDown
+              }`}
+              title={`${
+                outcome.move === "up" ? "Shortened" : "Drifted"
+              } ${outcome.movePts} pts since open (${formatAmerican(
+                outcome.openPrice,
+              )} → ${formatAmerican(outcome.price)})`}
+            >
+              {outcome.move === "up" ? "▲" : "▼"} {outcome.movePts}
+            </span>
+          )}
+        </span>
       </span>
       <span className={styles.heatBarTrack}>
         <span
