@@ -6,12 +6,15 @@ import {
   formatAmerican,
   formatCurrency,
 } from "../lib/odds";
+import { buildParlayImage } from "../lib/parlayImage";
+import { shareUrl } from "../lib/shareParlay";
 import styles from "./FuturesSlip.module.css";
 
 export default function FuturesSlip() {
   const { legs, remove, clear } = useFuturesParlay();
   const [stake, setStake] = useState(10);
   const [open, setOpen] = useState(true);
+  const [toast, setToast] = useState<string | null>(null);
 
   const decimal = useMemo(
     () => legs.reduce((acc, l) => acc * americanToDecimal(l.price), 1),
@@ -31,6 +34,56 @@ export default function FuturesSlip() {
     }
     return false;
   }, [legs]);
+
+  const flashToast = (msg: string) => {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 2200);
+  };
+
+  const shareText = useMemo(() => {
+    const names = legs.map((l) => l.name).join(" + ");
+    return `${names} to win it all — ${formatAmerican(american)} on PropParlay.ai`;
+  }, [legs, american]);
+
+  const onShareLink = async () => {
+    const url = shareUrl(legs);
+    const nav = navigator as Navigator & {
+      share?: (data: ShareData) => Promise<void>;
+    };
+    try {
+      if (nav.share) {
+        await nav.share({ title: "PropParlay.ai", text: shareText, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        flashToast("Link copied!");
+      }
+    } catch {
+      /* user cancelled share — no-op */
+    }
+  };
+
+  const onSaveCard = async () => {
+    try {
+      const blob = await buildParlayImage(legs, american, payout, stake);
+      const file = new File([blob], "propparlay.png", { type: "image/png" });
+      const nav = navigator as Navigator & {
+        canShare?: (data: ShareData) => boolean;
+        share?: (data: ShareData) => Promise<void>;
+      };
+      if (nav.canShare && nav.canShare({ files: [file] }) && nav.share) {
+        await nav.share({ files: [file], title: "PropParlay.ai", text: shareText });
+      } else {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "propparlay-parlay.png";
+        link.click();
+        URL.revokeObjectURL(link.href);
+        flashToast("Card saved!");
+      }
+    } catch {
+      flashToast("Couldn't make card");
+    }
+  };
 
   return (
     <aside className={`${styles.slip} ${open ? "" : styles.collapsed}`}>
@@ -123,6 +176,25 @@ export default function FuturesSlip() {
                   <strong>{formatCurrency(payout)}</strong>
                 </div>
               </div>
+
+              <div className={styles.shareRow}>
+                <button
+                  type="button"
+                  className={styles.share}
+                  onClick={onShareLink}
+                >
+                  Share parlay
+                </button>
+                <button
+                  type="button"
+                  className={styles.saveCard}
+                  onClick={onSaveCard}
+                >
+                  Save card
+                </button>
+              </div>
+
+              {toast && <p className={styles.toast}>{toast}</p>}
 
               <button type="button" className={styles.clear} onClick={clear}>
                 Clear slip

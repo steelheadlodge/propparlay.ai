@@ -38,6 +38,7 @@ function OutcomeRow({
         toggle({
           id,
           league: market.league,
+          marketKey: market.key,
           marketTitle: market.title,
           name: outcome.name,
           abbr: outcome.abbr,

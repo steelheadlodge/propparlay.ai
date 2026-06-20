@@ -1,13 +1,28 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import FuturesMarketCard from "../components/FuturesMarketCard";
 import FuturesSlip from "../components/FuturesSlip";
 import Layout from "../components/Layout";
+import { useFuturesParlay } from "../context/FuturesParlayContext";
 import { useFutures } from "../hooks/useFutures";
+import { decodeParlay } from "../lib/shareParlay";
 import styles from "./Futures.module.css";
 
 export default function Futures() {
   const state = useFutures();
+  const { hydrate } = useFuturesParlay();
+  const hydrated = useRef(false);
+
+  // Load a shared parlay from ?p= once on mount.
+  useEffect(() => {
+    if (hydrated.current) return;
+    hydrated.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get("p");
+    if (!p) return;
+    const legs = decodeParlay(p);
+    if (legs) hydrate(legs);
+  }, [hydrate]);
 
   const markets = state.status === "ready" ? state.markets : [];
   const quota = state.status === "ready" ? state.quota : null;

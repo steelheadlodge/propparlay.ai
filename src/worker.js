@@ -2,6 +2,13 @@ import { getGames } from "./espn.js";
 import { getGameOdds, getPlayerProps, getOddsQuota, SPORT_KEYS } from "./odds.js";
 import { buildSlate } from "./slate.js";
 import { getFutures } from "./futures.js";
+import {
+  decodeParlay,
+  combinedAmerican,
+  formatAmerican,
+  logoUrl,
+  escapeHtml,
+} from "./share.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -138,6 +145,145 @@ async function notifyViaResend(email, env) {
   }
 }
 
+function shareLanding(url) {
+  const p = url.searchParams.get("p") || "";
+  const legs = decodeParlay(p);
+  const appUrl = legs ? `/app/?p=${encodeURIComponent(p)}` : "/app/";
+
+  if (!legs) {
+    return Response.redirect(`${url.origin}/app/`, 302);
+  }
+
+  const { american } = combinedAmerican(legs);
+  const decimal = legs.reduce(
+    (acc, l) => acc * (l.price > 0 ? 1 + l.price / 100 : 1 + 100 / Math.abs(l.price)),
+    1,
+  );
+  const payout = Math.round(10 * decimal);
+  const names = legs.map((l) => l.name).join(" + ");
+  const title = `${names} — ${formatAmerican(american)}`;
+  const desc = `${legs.length}-leg futures parlay · $10 returns $${payout} · built on PropParlay.ai, the future of parlays.`;
+  const ogImg = `${url.origin}/og.svg?p=${encodeURIComponent(p)}`;
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(title)} · PropParlay.ai</title>
+<meta name="description" content="${escapeHtml(desc)}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PropParlay.ai">
+<meta property="og:title" content="${escapeHtml(title)}">
+<meta property="og:description" content="${escapeHtml(desc)}">
+<meta property="og:image" content="${escapeHtml(ogImg)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${escapeHtml(title)}">
+<meta name="twitter:description" content="${escapeHtml(desc)}">
+<meta name="twitter:image" content="${escapeHtml(ogImg)}">
+<link rel="canonical" href="${escapeHtml(url.origin + appUrl)}">
+<style>
+  html,body{margin:0;height:100%;background:#0a0f1f;color:#e2e8f0;font-family:Inter,system-ui,sans-serif}
+  .wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;gap:1rem;text-align:center;padding:1.5rem}
+  .brand{font-weight:800;font-size:1.4rem;color:#a5b4fc}
+  .brand span{color:#e2e8f0}
+  .t{font-weight:700;font-size:1.1rem;max-width:32rem}
+  .odds{font-weight:800;font-size:2rem;color:#34d399}
+  a.cta{margin-top:.5rem;padding:.7rem 1.4rem;border-radius:10px;font-weight:700;color:#0a0f1f;background:linear-gradient(135deg,#818cf8,#34d399);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">PropParlay<span>.ai</span></div>
+  <div class="t">${escapeHtml(names)}</div>
+  <div class="odds">${escapeHtml(formatAmerican(american))}</div>
+  <div style="color:#94a3b8">$10 returns $${payout}</div>
+  <a class="cta" href="${escapeHtml(appUrl)}">Open this parlay →</a>
+</div>
+<script>setTimeout(function(){location.replace(${JSON.stringify(appUrl)})},1200);</script>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, max-age=600",
+    },
+  });
+}
+
+function shareImage(url) {
+  const p = url.searchParams.get("p") || "";
+  const legs = decodeParlay(p);
+  if (!legs) {
+    return new Response("not found", { status: 404 });
+  }
+
+  const decimal = legs.reduce(
+    (acc, l) => acc * (l.price > 0 ? 1 + l.price / 100 : 1 + 100 / Math.abs(l.price)),
+    1,
+  );
+  const payout = Math.round(10 * decimal);
+  const { american } = combinedAmerican(legs);
+
+  const maxRows = 4;
+  const shown = legs.slice(0, maxRows);
+  const rows = shown
+    .map((l, i) => {
+      const y = 168 + i * 88;
+      const logo = logoUrl(l.league, l.abbr);
+      const badge = logo
+        ? `<image href="${escapeHtml(logo)}" x="92" y="${y + 8}" width="48" height="48" preserveAspectRatio="xMidYMid meet"/>`
+        : `<circle cx="116" cy="${y + 32}" r="24" fill="#6366f1"/><text x="116" y="${y + 39}" text-anchor="middle" font-size="18" font-weight="800" fill="#fff">${escapeHtml((l.abbr || l.name).slice(0, 3).toUpperCase())}</text>`;
+      return `
+        <rect x="64" y="${y}" width="1072" height="64" rx="14" fill="rgba(255,255,255,0.05)"/>
+        ${badge}
+        <text x="160" y="${y + 32}" font-size="30" font-weight="700" fill="#f1f5f9">${escapeHtml(l.name)}</text>
+        <text x="160" y="${y + 56}" font-size="18" fill="#94a3b8">${escapeHtml(`${l.league} · ${l.marketTitle}`)}</text>
+        <text x="1112" y="${y + 44}" text-anchor="end" font-size="30" font-weight="800" fill="#a5b4fc">${escapeHtml(formatAmerican(l.price))}</text>`;
+    })
+    .join("");
+
+  const more =
+    legs.length > maxRows
+      ? `<text x="84" y="${168 + maxRows * 88 + 20}" font-size="20" font-weight="600" fill="#94a3b8">+ ${legs.length - maxRows} more leg${legs.length - maxRows > 1 ? "s" : ""}</text>`
+      : "";
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0f1f"/><stop offset="1" stop-color="#131c33"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="foot" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="rgba(99,102,241,0.18)"/><stop offset="1" stop-color="rgba(16,185,129,0.18)"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="8" fill="url(#accent)"/>
+  <text x="64" y="86" font-size="44" font-weight="800" fill="#a5b4fc">PropParlay<tspan fill="#e2e8f0">.ai</tspan></text>
+  <text x="66" y="116" font-size="18" font-weight="700" fill="#64748b">THE FUTURE OF PARLAYS</text>
+  ${rows}
+  ${more}
+  <rect x="64" y="512" width="1072" height="86" rx="16" fill="url(#foot)"/>
+  <text x="92" y="546" font-size="18" font-weight="600" fill="#94a3b8">PARLAY ODDS</text>
+  <text x="92" y="586" font-size="46" font-weight="800" fill="#34d399">${escapeHtml(formatAmerican(american))}</text>
+  <text x="1108" y="546" text-anchor="end" font-size="18" font-weight="600" fill="#94a3b8">$10 returns</text>
+  <text x="1108" y="586" text-anchor="end" font-size="46" font-weight="800" fill="#f1f5f9">$${payout}</text>
+</svg>`;
+
+  return new Response(svg, {
+    headers: {
+      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=86400",
+    },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -261,6 +407,16 @@ export default {
 
     if (url.pathname.startsWith("/api/")) {
       return Response.json({ error: "Not found" }, { status: 404 });
+    }
+
+    // Shareable parlay link: rich OG unfurl for crawlers, redirect for humans.
+    if (url.pathname === "/s") {
+      return shareLanding(url);
+    }
+
+    // Dynamically rendered OG image (SVG) for a shared parlay.
+    if (url.pathname === "/og.svg") {
+      return shareImage(url);
     }
 
     // SPA fallback for React app at /app/*

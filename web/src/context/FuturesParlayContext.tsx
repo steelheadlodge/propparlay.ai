@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 export type FuturesLeg = {
   id: string;
   league: string;
+  marketKey: string;
   marketTitle: string;
   name: string;
   abbr: string | null;
@@ -18,6 +19,7 @@ type Ctx = {
   toggle: (leg: FuturesLeg) => void;
   remove: (id: string) => void;
   clear: () => void;
+  hydrate: (legs: FuturesLeg[]) => void;
 };
 
 const FuturesParlayCtx = createContext<Ctx | null>(null);
@@ -40,6 +42,8 @@ export function FuturesParlayProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => setLegs([]), []);
 
+  const hydrate = useCallback((next: FuturesLeg[]) => setLegs(next), []);
+
   const value = useMemo<Ctx>(
     () => ({
       legs,
@@ -47,8 +51,9 @@ export function FuturesParlayProvider({ children }: { children: ReactNode }) {
       toggle,
       remove,
       clear,
+      hydrate,
     }),
-    [legs, toggle, remove, clear],
+    [legs, toggle, remove, clear, hydrate],
   );
 
   return (

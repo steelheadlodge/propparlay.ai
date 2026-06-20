@@ -242,6 +242,53 @@
   background-clip: text;
 }
 
+.shareRow {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.share,
+.saveCard {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s, filter 0.15s, border-color 0.15s;
+}
+
+.share {
+  border: 0;
+  color: #0a0f1f;
+  background: linear-gradient(135deg, #818cf8, #34d399);
+}
+
+.share:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.saveCard {
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--light);
+}
+
+.saveCard:hover {
+  border-color: rgba(99, 102, 241, 0.7);
+  transform: translateY(-1px);
+}
+
+.toast {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #34d399;
+  margin: 0 0 0.6rem;
+}
+
 .clear {
   width: 100%;
   padding: 0.5rem;
