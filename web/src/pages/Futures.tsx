@@ -18,11 +18,24 @@ import { sportTheme } from "../lib/theme";
 import type { FuturesMarket } from "../types/futures";
 import styles from "./Futures.module.css";
 
+const US_LEAGUES = new Set(["NFL", "MLB", "NBA", "NHL", "NCAAF", "NCAAB", "WNBA"]);
+
 function buildExampleLegs(markets: FuturesMarket[]): FuturesLeg[] {
-  const picks: FuturesLeg[] = [];
-  const usedLeagues = new Set<string>();
+  // One market per league (its top favorite), then prefer the biggest US-league
+  // favorites so the teaser reads with familiar names (e.g. Dodgers + Rams),
+  // falling back to other leagues if fewer than two US markets are live.
+  const byLeague = new Map<string, FuturesMarket>();
   for (const m of markets) {
-    if (usedLeagues.has(m.league)) continue;
+    if (m.outcomes[0] && !byLeague.has(m.league)) byLeague.set(m.league, m);
+  }
+  const all = [...byLeague.values()];
+  const byPct = (a: FuturesMarket, b: FuturesMarket) =>
+    (b.outcomes[0]?.fairPct ?? 0) - (a.outcomes[0]?.fairPct ?? 0);
+  const us = all.filter((m) => US_LEAGUES.has(m.league)).sort(byPct);
+  const rest = all.filter((m) => !US_LEAGUES.has(m.league)).sort(byPct);
+
+  const picks: FuturesLeg[] = [];
+  for (const m of [...us, ...rest]) {
     const o = m.outcomes[0];
     if (!o) continue;
     picks.push({
@@ -37,7 +50,6 @@ function buildExampleLegs(markets: FuturesMarket[]): FuturesLeg[] {
       price: o.price,
       fairPct: o.fairPct,
     });
-    usedLeagues.add(m.league);
     if (picks.length >= 2) break;
   }
   return picks;
