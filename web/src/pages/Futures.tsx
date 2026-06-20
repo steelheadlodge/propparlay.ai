@@ -103,7 +103,7 @@ export default function Futures() {
 
   return (
     <Layout
-      title="The future of parlays"
+      title="The futures of parlays"
       subtitle="Stack cross-sport title bets — World Series, Super Bowl, Stanley Cup and more — at each team's real win chance. The first parlay lab built around futures."
     >
       {sharedNames && (

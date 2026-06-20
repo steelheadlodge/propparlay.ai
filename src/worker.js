@@ -249,7 +249,7 @@ function shareLanding(url) {
   const payout = Math.round(10 * decimal);
   const names = legs.map((l) => l.name).join(" + ");
   const title = `${names} — ${formatAmerican(american)}`;
-  const desc = `${legs.length}-leg futures parlay · $10 returns $${payout} · built on PropParlay.ai, the future of parlays.`;
+  const desc = `${legs.length}-leg futures parlay · $10 returns $${payout} · built on PropParlay.ai, the futures of parlays.`;
   const ogImg = `${url.origin}/og.svg?p=${encodeURIComponent(p)}`;
 
   const html = `<!doctype html>
