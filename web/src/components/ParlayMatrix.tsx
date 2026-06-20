@@ -14,8 +14,8 @@ import type { FuturesMarket, FuturesOutcome } from "../types/futures";
 import styles from "./ParlayMatrix.module.css";
 
 // Team-count options for the grid axes. "All" shows the full contender field
-// we fetch (up to 14 per league); 6 / 10 give a tighter board.
-const COUNT_OPTIONS = [6, 10, 99] as const;
+// we fetch; the others give a tighter NxN board.
+const COUNT_OPTIONS = [6, 12, 99] as const;
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -149,8 +149,8 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
   // Extra "pinned" legs (3rd / 4th team) that fold into every cell so the grid
   // can represent a 3- or 4-leg parlay while staying a 2-axis chart.
   const [pins, setPins] = useState<FuturesLeg[]>([]);
-  // How many teams to show per axis (defaults to the full field).
-  const [shown, setShown] = useState<number>(99);
+  // How many teams to show per axis (defaults to a compact 6x6 board).
+  const [shown, setShown] = useState<number>(6);
   // Per-axis search filters.
   const [qy, setQy] = useState("");
   const [qx, setQx] = useState("");
@@ -309,7 +309,7 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
                 className={`${styles.countBtn} ${shown === n ? styles.countActive : ""}`}
                 onClick={() => setShown(n)}
               >
-                {n === 99 ? "All" : n}
+                {n === 99 ? "All" : `${n}×${n}`}
               </button>
             ))}
           </div>

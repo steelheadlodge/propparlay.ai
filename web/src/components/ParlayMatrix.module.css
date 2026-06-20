@@ -256,7 +256,7 @@
     0 0 0 2px rgba(99, 102, 241, 0.55),
     0 0 20px rgba(99, 102, 241, 0.55);
   transform: scale(1.05);
-  z-index: 3;
+  z-index: 1;
 }
 
 .cellSel .cellPay {
@@ -294,16 +294,18 @@
   justify-content: center;
   position: sticky;
   top: 0;
-  z-index: 3;
+  z-index: 5;
   background: var(--dark-card, #111827);
+  box-shadow: 0 4px 8px rgba(2, 6, 23, 0.5);
 }
 
 .rowHead {
   position: sticky;
   left: 0;
-  z-index: 2;
+  z-index: 4;
   justify-content: flex-start;
   background: var(--dark-card, #111827);
+  box-shadow: 4px 0 8px rgba(2, 6, 23, 0.5);
 }
 
 .colHead:hover,
@@ -354,7 +356,7 @@
   position: sticky;
   top: 0;
   left: 0;
-  z-index: 5;
+  z-index: 6;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
