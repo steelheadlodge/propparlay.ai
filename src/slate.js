@@ -212,12 +212,15 @@ async function buildEventCards(env, event) {
   return cards;
 }
 
-export async function buildSlate(env) {
+export async function buildSlate(env, preOdds = null) {
   if (!env.ODDS_API_KEY) {
     return { configured: false, props: [], quota: null };
   }
 
-  const odds = await getGameOdds(env);
+  // Reuse game odds already fetched by the caller (shared with /api/odds) when
+  // provided, so the slate build doesn't spend a second set of game-odds
+  // credits. Falls back to fetching them itself if called standalone.
+  const odds = preOdds ?? (await getGameOdds(env));
   const events = pickEventsForProps(odds.events ?? []);
 
   const settled = await Promise.allSettled(events.map((e) => buildEventCards(env, e)));

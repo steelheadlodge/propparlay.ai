@@ -31,6 +31,90 @@ async function cachedJson(cacheKey, ttlSeconds, producer) {
   return data;
 }
 
+// If remaining Odds API credits drop below this, background refreshes are
+// skipped and we keep serving the last good payload until the monthly reset.
+const ODDS_LOW_CREDITS = 25;
+
+// KV-backed cache with stale-while-revalidate. Unlike the edge Cache API
+// (per-datacenter + evictable), KV is global and durable, so an expensive
+// upstream fetch (e.g. the multi-market futures board) happens ~once per
+// `freshSeconds` for ALL users instead of once per colo per eviction. Stale
+// data is served instantly while a single background refresh runs, so adding
+// more leagues never multiplies credit spend or adds latency.
+//
+//   - fresh hit  -> return cached data, no upstream call
+//   - stale hit  -> return cached data NOW, refresh once in the background
+//   - cold miss  -> block once to produce, then cache
+//
+// `isValid` guards against caching a degraded payload (e.g. an empty board from
+// an upstream hiccup) over good stale data.
+async function kvSwr(env, ctx, key, freshSeconds, producer, isValid = () => true) {
+  const kv = env.WAITLIST;
+  if (!kv) return producer(); // no KV binding -> just produce
+
+  const k = `cache:${key}`;
+  let entry = null;
+  try {
+    const raw = await kv.get(k);
+    if (raw) entry = JSON.parse(raw);
+  } catch {
+    entry = null;
+  }
+
+  const now = Date.now();
+  if (entry && now - entry.ts < freshSeconds * 1000) {
+    return entry.data; // fresh
+  }
+
+  if (entry) {
+    // Stale: serve immediately, revalidate in the background.
+    if (ctx?.waitUntil) {
+      ctx.waitUntil(kvRevalidate(kv, k, freshSeconds, producer, isValid));
+    }
+    return entry.data;
+  }
+
+  // Cold: nothing cached yet — block once.
+  const data = await producer();
+  if (isValid(data)) {
+    try {
+      await kv.put(k, JSON.stringify({ ts: now, data }), {
+        expirationTtl: Math.max(60, freshSeconds * 3),
+      });
+    } catch {
+      /* best-effort */
+    }
+  }
+  return data;
+}
+
+async function kvRevalidate(kv, k, freshSeconds, producer, isValid) {
+  // Credit circuit breaker: when credits run low, stop refreshing and keep the
+  // last good payload until the quota resets.
+  const { remaining } = getOddsQuota();
+  if (typeof remaining === "number" && remaining < ODDS_LOW_CREDITS) return;
+
+  // Soft lock so a burst across colos triggers only one refresh.
+  const lockKey = `${k}:lock`;
+  try {
+    if (await kv.get(lockKey)) return;
+    await kv.put(lockKey, "1", { expirationTtl: 120 });
+  } catch {
+    /* if the lock can't be set, still attempt the refresh */
+  }
+
+  try {
+    const data = await producer();
+    if (isValid(data)) {
+      await kv.put(k, JSON.stringify({ ts: Date.now(), data }), {
+        expirationTtl: Math.max(60, freshSeconds * 3),
+      });
+    }
+  } catch {
+    /* keep serving stale on failure */
+  }
+}
+
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -285,7 +369,7 @@ function shareImage(url) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/waitlist/count" && request.method === "GET") {
@@ -360,10 +444,17 @@ export default {
     }
 
     // Live prop slate (cards) from The Odds API, edge-cached 15 min to protect
-    // the request quota. Falls back to { configured: false } without a key.
+    // the request quota. Reuses the same cached game-odds payload as /api/odds
+    // (via the shared "odds:games:v1" key) so a slate build no longer spends a
+    // second set of game-odds credits. Falls back to { configured: false }.
     if (url.pathname === "/api/slate" && request.method === "GET") {
       try {
-        const data = await cachedJson("slate:v3", 900, () => buildSlate(env));
+        const data = await cachedJson("slate:v3", 900, async () => {
+          const games = await cachedJson("odds:games:v1", 120, () =>
+            getGameOdds(env),
+          );
+          return buildSlate(env, games);
+        });
         return jsonResponse(data);
       } catch (err) {
         console.error("slate failed", err);
@@ -372,11 +463,17 @@ export default {
     }
 
     // Futures board (championship / conference / division / win-total / award
-    // markets), edge-cached 12h — futures move slowly and this protects quota.
+    // markets). KV-backed stale-while-revalidate at 24h: one global refresh per
+    // day serves every user/colo, so adding leagues doesn't multiply credits.
     if (url.pathname === "/api/futures" && request.method === "GET") {
       try {
-        const data = await cachedJson("futures:v6", 18 * 60 * 60, () =>
-          getFutures(env),
+        const data = await kvSwr(
+          env,
+          ctx,
+          "futures:v7",
+          24 * 60 * 60,
+          () => getFutures(env),
+          (d) => Array.isArray(d?.markets) && d.markets.length > 0,
         );
         return jsonResponse(data);
       } catch (err) {
