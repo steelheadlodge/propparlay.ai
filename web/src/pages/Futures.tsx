@@ -4,6 +4,7 @@ import AnimatedNumber from "../components/AnimatedNumber";
 import FuturesMarketCard from "../components/FuturesMarketCard";
 import FuturesSlip from "../components/FuturesSlip";
 import Layout from "../components/Layout";
+import SmartPicks from "../components/SmartPicks";
 import SportIcon from "../components/SportIcon";
 import type { FuturesLeg } from "../context/FuturesParlayContext";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
@@ -166,6 +167,8 @@ export default function Futures() {
         </p>
       ) : (
         <>
+          <SmartPicks markets={markets} />
+
           {slipLegs.length === 0 && (
             <button
               type="button"

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import FuturesSlip from "../components/FuturesSlip";
 import Layout from "../components/Layout";
 import ParlayMatrix from "../components/ParlayMatrix";
+import SmartPicks from "../components/SmartPicks";
 import { useFutures } from "../hooks/useFutures";
 import styles from "./Matrix.module.css";
 
@@ -24,7 +25,10 @@ export default function Matrix() {
           as books open futures for the upcoming seasons.
         </p>
       ) : (
-        <ParlayMatrix markets={markets} />
+        <>
+          <SmartPicks markets={markets} />
+          <ParlayMatrix markets={markets} />
+        </>
       )}
 
       <Link to="/" className={styles.crossLink}>
