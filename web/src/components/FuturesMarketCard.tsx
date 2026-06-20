@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
 import { needsLogoOutline } from "../lib/darkLogos";
 import { HEAT_META, heatTier } from "../lib/futuresHeat";
-import { formatAmerican } from "../lib/odds";
+import { formatAmerican, payoutFor } from "../lib/odds";
 import { sportTheme } from "../lib/theme";
 import SportIcon from "./SportIcon";
 import type { FuturesMarket, FuturesOutcome } from "../types/futures";
@@ -68,15 +68,28 @@ function OutcomeRow({
           {(outcome.abbr ?? outcome.name).slice(0, 3)}
         </span>
       )}
-      <span className={styles.name}>{outcome.name}</span>
+      <span className={styles.nameWrap}>
+        <span className={styles.name}>{outcome.name}</span>
+        <span className={styles.tier}>{meta.label}</span>
+      </span>
       <span className={styles.heatBarTrack}>
         <span
           className={styles.heatBar}
           style={{ width: `${Math.min(outcome.fairPct * 2.6, 100)}%` }}
         />
       </span>
-      <span className={styles.fair}>{outcome.fairPct}%</span>
-      <span className={styles.price}>{formatAmerican(outcome.price)}</span>
+      <span
+        className={styles.fair}
+        title="Win chance — the real probability after we strip out the book's margin"
+      >
+        {outcome.fairPct}%
+      </span>
+      <span className={styles.priceWrap}>
+        <span className={styles.price}>{formatAmerican(outcome.price)}</span>
+        <span className={styles.payoutHint}>
+          $10 → ${payoutFor(outcome.price)}
+        </span>
+      </span>
       <span className={styles.add}>{inSlip ? "✓" : "+"}</span>
     </button>
   );

@@ -12,6 +12,6 @@ export function heatTier(fairPct: number): HeatTier {
 export const HEAT_META: Record<HeatTier, { label: string; color: string }> = {
   fav: { label: "Favorite", color: "#34d399" },
   contender: { label: "Contender", color: "#fbbf24" },
-  live: { label: "Live longshot", color: "#38bdf8" },
-  long: { label: "Longshot", color: "#94a3b8" },
+  live: { label: "Dark horse", color: "#38bdf8" },
+  long: { label: "Long shot", color: "#94a3b8" },
 };

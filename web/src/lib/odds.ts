@@ -16,6 +16,11 @@ export function formatAmerican(odds: number): string {
   return odds > 0 ? `+${odds}` : String(odds);
 }
 
+/** Total returned (stake included) for a single price at a given stake. */
+export function payoutFor(american: number, stake = 10): number {
+  return Math.round(stake * americanToDecimal(american));
+}
+
 /** Best (highest payout) book line for a prop. */
 export function bestBook(prop: PropPick): BookLine {
   return prop.books.reduce((best, b) => (b.odds > best.odds ? b : best));

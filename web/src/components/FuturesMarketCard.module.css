@@ -48,7 +48,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 18px 30px 1fr 70px 44px 56px 22px;
+  grid-template-columns: 18px 30px 1fr 64px 44px 70px 22px;
   align-items: center;
   gap: 0.55rem;
   width: 100%;
@@ -104,12 +104,31 @@
   border-radius: 7px;
 }
 
+.nameWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .name {
   font-size: 0.9rem;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.tier {
+  width: fit-content;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 999px;
+  color: var(--heat, #94a3b8);
+  background: color-mix(in srgb, var(--heat) 16%, transparent);
 }
 
 .heatBarTrack {
@@ -134,12 +153,27 @@
   text-align: right;
 }
 
+.priceWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
 .price {
   font-size: 0.82rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: right;
   color: #e2e8f0;
+}
+
+.payoutHint {
+  font-size: 0.6rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--gray);
+  white-space: nowrap;
 }
 
 .add {
@@ -167,7 +201,7 @@
 
 @media (max-width: 640px) {
   .row {
-    grid-template-columns: 16px 26px 1fr 44px 50px 20px;
+    grid-template-columns: 16px 26px 1fr 42px 66px 20px;
   }
   .heatBarTrack {
     display: none;

@@ -50,7 +50,7 @@ export default function Futures() {
   return (
     <Layout
       title="The future of parlays"
-      subtitle="Stack cross-sport title bets — World Series, Super Bowl, Stanley Cup and more — at de-vigged true odds. The first parlay lab built around futures."
+      subtitle="Stack cross-sport title bets — World Series, Super Bowl, Stanley Cup and more — at each team's real win chance. The first parlay lab built around futures."
     >
       {sharedNames && (
         <a className={styles.tail} href="/#waitlistForm">
@@ -141,8 +141,9 @@ export default function Futures() {
       </Link>
 
       <p className={styles.footerNote}>
-        Live championship odds via The Odds API, de-vigged to a true win
-        probability. Build a parlay, then place it at your own book.
+        Win chance shown is each team's real shot at the title — we strip out the
+        sportsbook's built-in margin so the number isn't padded. Build a parlay,
+        then place it at your own book.
       </p>
 
       <FuturesSlip />
