@@ -35,17 +35,17 @@ The Vite dev server runs at `http://localhost:5173/app/`.
 ## Build & deploy
 
 ```bash
-# Build the React app into public/app
+# Build the React app into public/app (local check)
 npm run build
 
-# Deploy the worker + assets to Cloudflare
+# Deploy — wrangler runs build:web automatically before upload
 npm run deploy   # requires CLOUDFLARE_API_TOKEN, or run `wrangler login` first
 ```
 
-Pushing to `main` triggers Cloudflare's git build, which runs `wrangler deploy`.
+Pushing to `main` triggers Cloudflare's git build (`wrangler deploy`), which builds
+`web/` into `public/app/` before uploading assets.
 
-> Important: after changing anything in `web/`, run `npm run build` so `public/app/`
-> reflects your changes before committing.
+> After changing `web/`, commit source only — do not commit `public/app/` (gitignored).
 
 ## Waitlist
 

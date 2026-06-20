@@ -3,6 +3,10 @@
   "name": "propparlayai",
   "main": "src/worker.js",
   "compatibility_date": "2025-06-19",
+  "build": {
+    "command": "npm run build:web",
+    "watch_dir": "web"
+  },
   "vars": {
     "FORMSPREE_FORM_ID": "xjgdnazp"
   },
