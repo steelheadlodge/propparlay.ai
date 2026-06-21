@@ -432,6 +432,12 @@
             margin-bottom: 0.75rem;
         }
         .livegrid-legend strong { color: #4ade80; }
+        /* Swap hover/tap wording by input type. */
+        .lg-tap { display: none; }
+        @media (hover: none), (pointer: coarse) {
+            .lg-hover { display: none; }
+            .lg-tap { display: inline; }
+        }
         .lg {
             display: grid;
             grid-template-columns: 74px repeat(4, 1fr);
@@ -578,12 +584,14 @@
         <div class="hero-visual">
             <div class="livegrid-card">
                 <p class="livegrid-legend">
-                    Greener cells are <strong>more likely to hit</strong>. Hover a cell —
-                    or tap one — to lock a combo. 🔥 marks the safest pairing.
+                    Greener cells are <strong>more likely to hit</strong>.
+                    <span class="lg-hover">Hover</span><span class="lg-tap">Tap</span>
+                    a cell to lock a combo. 🔥 marks the safest pairing.
                 </p>
                 <div class="lg" id="livegrid"></div>
                 <div class="lg-readout" id="lgReadout">
-                    Hover any cell to see the combined parlay odds.
+                    <span class="lg-hover">Hover</span><span class="lg-tap">Tap</span>
+                    any cell to see the combined parlay odds.
                 </div>
             </div>
         </div>
