@@ -473,7 +473,7 @@ export default {
         const data = await kvSwr(
           env,
           ctx,
-          "futures:v8",
+          "futures:v9",
           24 * 60 * 60,
           () => getFutures(env),
           (d) => Array.isArray(d?.markets) && d.markets.length > 0,

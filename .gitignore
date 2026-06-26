@@ -20,3 +20,9 @@ web/ios/App/build/
 # Raw (unframed) device captures — local working files. Final framed App Store
 # screenshots in store/iphone-6.9 and store/ipad-13 are committed.
 store/raw/
+
+# Local iOS/sim archive output from screenshot + archive runs (hundreds of MB).
+build/
+
+# macOS Finder cruft.
+.DS_Store

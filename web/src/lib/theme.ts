@@ -11,7 +11,7 @@ export const SPORT_THEME: Record<string, SportTheme> = {
   MLB: { color: "#ef4444", glow: "rgba(239, 68, 68, 0.35)", label: "MLB" },
   NCAAF: { color: "#eab308", glow: "rgba(234, 179, 8, 0.35)", label: "NCAAF" },
   NCAAB: { color: "#f97316", glow: "rgba(249, 115, 22, 0.35)", label: "NCAAB" },
-  "World Cup": { color: "#22c55e", glow: "rgba(34, 197, 94, 0.35)", label: "World Cup" },
+  "Int'l Soccer": { color: "#22c55e", glow: "rgba(34, 197, 94, 0.35)", label: "Int'l Soccer" },
   UCL: { color: "#818cf8", glow: "rgba(129, 140, 248, 0.35)", label: "UCL" },
   Europa: { color: "#fb923c", glow: "rgba(251, 146, 60, 0.35)", label: "Europa" },
   Euros: { color: "#2dd4bf", glow: "rgba(45, 212, 191, 0.35)", label: "Euros" },
@@ -34,7 +34,7 @@ export const SPORT_THEME: Record<string, SportTheme> = {
 };
 
 const SOCCER_LEAGUES = new Set([
-  "World Cup",
+  "Int'l Soccer",
   "UCL",
   "Europa",
   "Conference",

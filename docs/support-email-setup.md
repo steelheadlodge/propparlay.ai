@@ -6,58 +6,99 @@ PropParlay uses **Cloudflare Email Routing** (free) on `propparlay.ai` — same 
 
 1. **Email Routing enabled** on `propparlay.ai` (status: ready).
 2. **MX / SPF / DKIM** records applied by Cloudflare for inbound mail.
-3. **Routing rule:** `support@propparlay.ai` → forwards to `support@tunedtv.com`.
-4. **Destination addresses pending verification:**
-   - `support@tunedtv.com` (primary forward target)
-   - `spcecwby@gmail.com` (added as backup — verify if you want to use it instead)
+3. **Routing rules:**
+   | Address | Forwards to |
+   |---------|-------------|
+   | `support@propparlay.ai` | `support@tunedtv.com` |
+   | `hello@propparlay.ai` | `spcecwby@gmail.com` |
+   | `social@propparlay.ai` | `spcecwby@gmail.com` |
+4. **Verified destination addresses:** `support@tunedtv.com`, `spcecwby@gmail.com`
 
-## What you need to do now (5 minutes)
+## Test inbound (do this once)
 
-### 1. Verify the forward destination
-
-Check **both** inboxes (in case you want Gmail instead of tunedtv):
-
-- `support@tunedtv.com`
-- `spcecwby@gmail.com`
-
-Open the email from **Cloudflare Email Routing** and click **Verify**. Until verified, forwards to that address will not work.
-
-### 2. Test inbound mail
-
-From any email account, send:
+From any email account, send three quick tests:
 
 ```
-To: support@propparlay.ai
-Subject: PropParlay support test
-Body: test
+To: support@propparlay.ai   → support@tunedtv.com
+To: hello@propparlay.ai     → spcecwby@gmail.com
+To: social@propparlay.ai    → spcecwby@gmail.com
 ```
 
-It should arrive at `support@tunedtv.com` within a minute or two.
+Each should arrive within a minute or two.
 
-### 3. (Optional) Forward to Gmail instead
+---
 
-If you prefer Gmail as the inbox:
+## Outgoing email — step by step
 
-```bash
-cd web
-# After spcecwby@gmail.com is verified:
-npx wrangler email routing rules list propparlay.ai
-# Note the rule ID, then update or recreate with spcecwby@gmail.com
-```
+You have **two jobs**: (A) reply to people manually from Gmail, and (B) automated emails from the app (waitlist confirmations, etc.). You can use one solution or both.
 
-Or in Cloudflare Dashboard: **Email** → **Email Routing** → **propparlay.ai** → edit the **Support inbox** rule.
+### Option A — Google Workspace (best for manual replies)
 
-## Replying as support@propparlay.ai
+Full inbox at `@propparlay.ai`. Easiest if you want to read and reply like normal email.
 
-Forwarding only handles **receiving**. To **send** replies that show `From: support@propparlay.ai`:
+1. Go to [workspace.google.com](https://workspace.google.com) → **Get started**.
+2. Choose **Business Starter** (~$7/user/mo).
+3. When asked for a domain, enter **`propparlay.ai`**.
+4. Google gives you a **TXT verification record**. Add it in Cloudflare:
+   - Dashboard → **propparlay.ai** → **DNS** → **Add record** → TXT → paste value → Save.
+5. Wait a few minutes, click **Verify** in the Google setup wizard.
+6. Create users (or aliases):
+   - **`support@propparlay.ai`** — App Store support, privacy requests
+   - **`hello@propparlay.ai`** — general contact
+   - **`social@propparlay.ai`** — X / social signup
+7. **Important:** After Workspace is live, update Cloudflare Email Routing:
+   - Either **remove** the forward rules for addresses that now live in Workspace, **or**
+   - Point forwards to the Workspace mailbox instead of Gmail/TunedTV (avoid duplicate delivery).
+8. Send a test from each address to your personal Gmail. Check **From** shows `@propparlay.ai`.
 
-| Option | Cost | Notes |
-|--------|------|--------|
-| **Gmail “Send mail as”** | Free | After mail forwards to Gmail: Settings → Accounts → Send mail as → add `support@propparlay.ai`. You may need SMTP (Google Workspace or Cloudflare Email Sending). |
-| **Google Workspace** | ~$6/mo | Full mailbox `support@propparlay.ai` — simplest if you want a real inbox. |
-| **Cloudflare Email Sending** | Pay per email | Enable in Dashboard → Email Service → Sending. Our API token couldn’t enable it via CLI (permissions); use the Dashboard if you want Worker/Resend-style outbound from the domain. |
+**You do:** steps 1–8 in Google + Cloudflare DNS.  
+**Result:** Send and receive as `support@`, `hello@`, `social@` from Gmail app or mail.google.com.
 
-For App Store purposes, **receiving** at `support@propparlay.ai` is enough. Replying from your personal Gmail is fine for early support if you mention PropParlay in the signature.
+---
+
+### Option B — Cloudflare Email Sending (best for automated app email)
+
+Use this for **transactional** mail from the Worker (waitlist “you’re on the list”, signup alerts). Not a full inbox — you still read mail via Email Routing forwards.
+
+1. Open Cloudflare Dashboard → **Compute & AI** → **Email Service** → **Email Sending**.
+2. Click **Onboard domain** → select **`propparlay.ai`** → **Add records and onboard**.
+3. Cloudflare adds **SPF + DKIM** DNS records automatically. Wait ~5–15 min for DNS.
+4. Confirm status shows **Active** on the domain.
+5. Send a test from the dashboard (or CLI once your API token has Email Sending permission):
+
+   ```bash
+   cd /Users/ai/propparlay
+   npx wrangler email sending send propparlay.ai \
+     --from "PropParlay <support@propparlay.ai>" \
+     --to spcecwby@gmail.com \
+     --subject "PropParlay outbound test" \
+     --text "If you see this, Email Sending works."
+   ```
+
+6. Wire the Worker (optional — for waitlist confirmations):
+   - Add to `wrangler.jsonc`: `"send_email": [{ "name": "EMAIL" }]`
+   - Replace the Resend stub in `src/worker.js` with `env.EMAIL.send({ from: { email: "support@propparlay.ai", name: "PropParlay" }, ... })`
+   - Redeploy: `npm run deploy`
+
+**You do:** steps 1–5 in Dashboard (CLI send is optional).  
+**Result:** The app can send branded `@propparlay.ai` email. You still reply manually from Gmail unless you also do Option A or C.
+
+---
+
+### Option C — Gmail “Send mail as” (free, fiddly)
+
+Keep reading mail in **`spcecwby@gmail.com`** (hello@ / social@ forwards) but **send as** `support@propparlay.ai`.
+
+**Requires Option B first** — Cloudflare Email Sending must be enabled so the domain can authenticate outbound mail.
+
+1. Complete **Option B steps 1–4** (Email Sending onboarded on `propparlay.ai`).
+2. In Gmail (spcecwby@gmail.com) → **Settings** (gear) → **See all settings** → **Accounts and Import**.
+3. Under **Send mail as**, click **Add another email address**.
+4. Name: `PropParlay` · Email: **`support@propparlay.ai`** → Next.
+5. For SMTP, Cloudflare Email Sending is **API-only** (no Gmail SMTP host). This path usually **does not work** with free Gmail + Cloudflare alone.
+6. **Practical workaround:** use **Google Workspace** (Option A) instead, or reply from Gmail and set **Reply-To: support@propparlay.ai** (recipients see your Gmail From — not ideal for brand).
+
+**Recommendation:** Skip Option C. Use **Workspace** for human replies + **Cloudflare Email Sending** for automated messages.
 
 ## CLI reference
 

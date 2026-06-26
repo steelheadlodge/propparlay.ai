@@ -10,7 +10,7 @@ export const ESPN_PATH = {
   NCAAF: "football/college-football",
   NCAAB: "basketball/mens-college-basketball",
   // Soccer competitions use ESPN's league slugs under /sports/soccer/<slug>.
-  "World Cup": "soccer/fifa.world",
+  "Int'l Soccer": "soccer/fifa.world",
   UCL: "soccer/uefa.champions",
   Europa: "soccer/uefa.europa",
   Conference: "soccer/uefa.europa.conf",

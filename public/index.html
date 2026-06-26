@@ -734,12 +734,12 @@
     <script>
         // Live cross-sport heat-map grid (demo data; mirrors the in-app math).
         const DOWN = [
-            { flag: '🇫🇷', name: 'France', pct: 19 },
-            { flag: '🇪🇸', name: 'Spain', pct: 15 },
-            { flag: '🏴', name: 'England', pct: 13 },
-            { flag: '🇧🇷', name: 'Brazil', pct: 12 },
-            { flag: '🇦🇷', name: 'Argentina', pct: 11 },
-            { flag: '🇵🇹', name: 'Portugal', pct: 8 },
+            { abbr: 'KC', name: 'Chiefs', pct: 19 },
+            { abbr: 'BUF', name: 'Bills', pct: 15 },
+            { abbr: 'PHI', name: 'Eagles', pct: 13 },
+            { abbr: 'DET', name: 'Lions', pct: 12 },
+            { abbr: 'BAL', name: 'Ravens', pct: 11 },
+            { abbr: 'SF', name: '49ers', pct: 8 },
         ];
         const ACROSS = [
             { abbr: 'LAD', name: 'Dodgers', pct: 20 },
@@ -778,7 +778,7 @@
 
             const corner = document.createElement('div');
             corner.className = 'lg-corner';
-            corner.innerHTML = '<span class="cy">↓ World Cup</span><span class="cx">→ MLB</span>';
+            corner.innerHTML = '<span class="cy">↓ NFL</span><span class="cx">→ MLB</span>';
             grid.appendChild(corner);
 
             ACROSS.forEach((x, ci) => {
@@ -793,7 +793,7 @@
                 const rh = document.createElement('div');
                 rh.className = 'lg-row';
                 rh.dataset.row = ri;
-                rh.innerHTML = `<span class="lg-flag">${y.flag}</span><span>${y.name}</span>`;
+                rh.innerHTML = `<span class="lg-flag">${y.abbr}</span><span>${y.name}</span>`;
                 grid.appendChild(rh);
 
                 ACROSS.forEach((x, ci) => {
@@ -811,7 +811,7 @@
 
                     const show = () => {
                         readout.innerHTML =
-                            `<b>${y.flag} ${y.name}</b> + <b>${x.name}</b> &nbsp;·&nbsp; ` +
+                            `<b>${y.abbr} ${y.name}</b> + <b>${x.name}</b> &nbsp;·&nbsp; ` +
                             `<span class="am">${americanFromProb(p)}</span> &nbsp;·&nbsp; ` +
                             `$10 → <b>$${payoutFor(p)}</b> &nbsp;·&nbsp; ${fmtPct(p * 100)} chance`;
                     };

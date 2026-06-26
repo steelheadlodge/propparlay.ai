@@ -1,0 +1,18 @@
+---
+description: Full project context when resuming PropParlay work
+alwaysApply: true
+---
+
+# Resuming PropParlay work
+
+This repo is opened from **Dev HQ → Open project chat**. Chat history is scoped to this
+workspace folder — keep using the same thread here; do not ask the user to re-explain setup.
+
+At the **start of a session** or when the user returns after a break, before substantive work:
+
+1. Read `AGENTS.md` (architecture, deploy, where we left off).
+2. Skim `README.md` (routes, roadmap) and `store/SUBMISSION.md` if the task touches the app store.
+3. Run `git log -5 --oneline` and `git status -sb` so you know recent changes and dirty state.
+
+Then respond with full context. Never re-ask for architecture or deploy steps that are already
+documented in `AGENTS.md`.

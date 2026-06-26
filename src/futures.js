@@ -23,7 +23,7 @@ const LEAGUE_BY_PREFIX = [
   ["basketball_nba", "NBA"],
   ["basketball_ncaab", "NCAAB"],
   ["icehockey_nhl", "NHL"],
-  ["soccer_fifa_world_cup", "World Cup"],
+  // soccer_fifa_world_cup excluded from catalog (App Store 5.2.1 — FIFA IP).
   ["soccer_uefa_champs_league", "UCL"],
   ["soccer_uefa_europa_conference_league", "Conference"],
   ["soccer_uefa_europa", "Europa"],
@@ -64,10 +64,22 @@ function impliedProb(odds) {
 }
 
 // Clean "NFL Super Bowl Winner 2025/2026" style titles into a short label.
-function shortTitle(title, league) {
+// Strip FIFA / World Cup wording — books use those marks; we must not display them.
+function sanitizeMarketTitle(title, sportKey) {
+  if (sportKey?.includes("fifa")) return "Men's Int'l Soccer Champion";
   let t = (title ?? "").trim();
+  t = t
+    .replace(/\bFIFA\b/gi, "")
+    .replace(/\bWorld Cup\b/gi, "Int'l Soccer")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return t || "Champion";
+}
+
+function shortTitle(title, league, sportKey) {
+  let t = sanitizeMarketTitle(title, sportKey);
   if (league && t.startsWith(league + " ")) t = t.slice(league.length + 1);
-  return t || title || "Futures";
+  return t || "Futures";
 }
 
 async function fetchCatalog(apiKey) {
@@ -76,6 +88,8 @@ async function fetchCatalog(apiKey) {
   const json = await res.json();
   return (Array.isArray(json) ? json : []).filter((s) => {
     if (!s?.has_outrights || s?.active === false) return false;
+    // FIFA World Cup outrights — excluded (App Store 5.2.1; no license for FIFA marks).
+    if (s.key === "soccer_fifa_world_cup" || s.key?.includes("fifa_world")) return false;
     return leagueForKey(s.key) != null;
   });
 }
@@ -134,7 +148,7 @@ async function fetchMarket(apiKey, sport, teams) {
   return {
     key: sport.key,
     league,
-    title: shortTitle(sport.title, league),
+    title: shortTitle(sport.title, league, sport.key),
     description: sport.description ?? "",
     outcomes,
   };
@@ -214,32 +228,31 @@ export async function getFutures(env) {
   // Order leagues so the most timely / marquee futures surface first, and cap
   // the total fetched to protect the Odds API quota.
   const LEAGUE_ORDER = {
-    "World Cup": 0,
+    NFL: 0,
     MLB: 1,
     NBA: 2,
     NHL: 3,
-    NFL: 4,
-    NCAAF: 5,
-    NCAAB: 6,
-    WNBA: 7,
-    UCL: 8,
-    EPL: 9,
-    "La Liga": 10,
-    "Serie A": 11,
-    Bundesliga: 12,
-    "Ligue 1": 13,
-    Europa: 14,
-    Conference: 15,
-    Euros: 16,
-    MLS: 17,
-    "Liga MX": 18,
-    Eredivisie: 19,
-    "Primeira Liga": 20,
-    "Brazil Série A": 21,
-    "Saudi Pro League": 22,
-    "Scottish Prem": 23,
-    Championship: 24,
-    Libertadores: 25,
+    NCAAF: 4,
+    NCAAB: 5,
+    WNBA: 6,
+    UCL: 7,
+    EPL: 8,
+    "La Liga": 9,
+    "Serie A": 10,
+    Bundesliga: 11,
+    "Ligue 1": 12,
+    Europa: 13,
+    Conference: 14,
+    Euros: 15,
+    MLS: 16,
+    "Liga MX": 17,
+    Eredivisie: 18,
+    "Primeira Liga": 19,
+    "Brazil Série A": 20,
+    "Saudi Pro League": 21,
+    "Scottish Prem": 22,
+    Championship: 23,
+    Libertadores: 24,
   };
   catalog.sort(
     (a, b) =>

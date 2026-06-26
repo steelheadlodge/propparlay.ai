@@ -78,6 +78,15 @@ export default function Futures() {
 
   const markets = state.status === "ready" ? state.markets : [];
 
+  // App Store screenshot helper: /?shot=ai scrolls to the AI builder block.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("shot") !== "ai") return;
+    if (state.status !== "ready" || markets.length === 0) return;
+    requestAnimationFrame(() => {
+      document.getElementById("ai-builder")?.scrollIntoView({ block: "start" });
+    });
+  }, [state.status, markets.length]);
+
   // A concrete two-team, cross-sport example used to teach the core idea:
   // bet multiple title favorites at once for one combined payout.
   const example = useMemo(() => {
@@ -159,7 +168,9 @@ export default function Futures() {
         </p>
       ) : (
         <>
-          <SmartPicks markets={markets} />
+          <div id="ai-builder">
+            <SmartPicks markets={markets} />
+          </div>
 
           {leagues.length > 1 && (
             <div className={styles.filters}>

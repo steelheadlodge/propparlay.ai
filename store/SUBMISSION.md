@@ -3,6 +3,15 @@
 Everything needed to submit the iOS app (and Android later). The native app is
 built with Capacitor and **builds + runs successfully** on the simulator.
 
+> ## Age rating (App Store questionnaire)
+> **Rejected twice with opposite guidance on gambling flags — follow the latest review:**
+> - **Gambling (real money): Yes** — Apple 2026-06-25 (2.3.6): app provides odds/picks/parlay
+>   tools related to real-money betting information.
+> - **Simulated Gambling: None** — not a casino / no virtual-currency wagering.
+> - **Contests: None**
+>
+> Do **not** set Frequent/Intense Simulated Gambling (that caused the first rejection).
+
 ## App identity
 
 | Field | Value |
@@ -11,7 +20,7 @@ built with Capacitor and **builds + runs successfully** on the simulator.
 | Subtitle (iOS, 30 char) | Cross-sport parlay lab |
 | Bundle ID | `ai.propparlay.app` |
 | Category | Sports (primary) |
-| Age rating | **17+** (frequent/intense simulated gambling) |
+| Age rating | **Gambling: Yes**, **Simulated Gambling: None**, **Contests: None** |
 | Privacy Policy URL | https://propparlay.ai/privacy |
 | Support URL | https://propparlay.ai/support |
 | Marketing URL | https://propparlay.ai |
@@ -56,7 +65,7 @@ order: Grid → Futures lab → Tonight.
 > required). If gambling is a problem, call 1-800-GAMBLER.
 
 **Keywords (100 char)**
-> parlay,odds,futures,sports betting,World Cup,Super Bowl,World Series,picks,props,NFL,NBA,MLB,NHL
+> parlay,odds,futures,picks,props,scores,sports,betting,Super,Bowl,Series,NFL,NBA,MLB,NHL
 
 **Reviewer notes (paste into App Review notes)**
 > This app provides sports betting INFORMATION and analysis only. It does not
@@ -106,3 +115,51 @@ The native app loads its bundled web build and calls `https://propparlay.ai/api/
 That worker now sends `Access-Control-Allow-Origin: *` so the native web view
 (origin `capacitor://localhost`) can read the API. If futures/props ever show
 empty in the app, check that the worker is deployed and the API returns data.
+
+## Rejection recovery
+
+### Round 1 — 2026-06-24, Guideline 2.3.8
+
+Cause: Age Rating set to **Frequent/Intense Simulated Gambling**. Fix: set **Simulated
+Gambling = None** (PropParlay does not simulate placing bets).
+
+### Round 2 — 2026-06-25, Guidelines 5.2.1 + 2.3.6
+
+**5.2.1 (FIFA IP):** Reviewer's screenshots showed in-app **"FIFA World Cup Winner"**
+with national-team flags (France, Spain, England…) and Smart Picks copy saying
+**"World Cup contender"** — all from live `/api/futures` data, not just the landing
+page. Fix in repo:
+- **Drop** `soccer_fifa_world_cup` from the futures catalog (no FIFA World Cup market).
+- Sanitize any remaining titles that mention FIFA / World Cup.
+- Landing hero → **NFL × MLB** (already done).
+- Keywords → no World Cup.
+- **Retake every App Store screenshot** that showed World Cup / FIFA content
+  (Futures tab + AI builder with Spain pick). Lead with NFL/MLB/NBA futures.
+
+**2.3.6 (Age rating):** Apple requires **Gambling = Yes** because the app provides
+betting-related information (odds, picks, parlay tools). Keep **Simulated Gambling =
+None**. Resubmit with corrected rating.
+
+**Resubmit checklist (requires deploy + new build + new screenshots):**
+1. **Deploy worker** (`npm run deploy`) — drops FIFA World Cup from `/api/futures`.
+2. `cd web && npm run cap:sync` → bump **Build** to **3** in Xcode → Archive → Upload.
+3. App Store Connect → **Age Rating** → Gambling **Yes**, Simulated Gambling **None**.
+4. Update **keywords** (no World Cup). **Replace every screenshot** that showed
+   "FIFA World Cup Winner" or national soccer flags (Futures tab + AI builder).
+5. Reply to reviewer (paste below) → **Submit for Review**.
+
+**Reviewer reply (round 2):**
+> We addressed both issues:
+>
+> **5.2.1:** Removed the FIFA World Cup futures market and all FIFA / World Cup
+> labeling from the app. The futures board and AI builder now lead with US pro-sports
+> markets (Super Bowl, World Series, etc.). Updated App Store screenshots accordingly.
+> We do not use FIFA marks, branding, or World Cup presentation.
+>
+> **2.3.6:** Updated Age Rating to **Gambling: Yes** (information about real-money
+> betting markets), **Simulated Gambling: None** (we do not simulate wagering or use
+> virtual currency). PropParlay remains an informational tool only — no wagers, no
+> sportsbook links, no in-app betting.
+
+**Fallback (only if rejected again on gambling + individual account):** enroll Apple
+Developer Program as an **Organization** (LLC + D-U-N-S). Fits the 50/50 partnership.
