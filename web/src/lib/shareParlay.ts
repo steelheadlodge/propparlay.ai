@@ -1,6 +1,7 @@
 import type { FuturesLeg } from "../context/FuturesParlayContext";
 import { espnLogoUrl } from "./theme";
 import { SITE_URL } from "./config";
+import { getOrCreateRef } from "./access";
 
 // Compact wire tuple: [league, marketKey, marketTitle, name, price, abbr].
 type Tuple = [string, string, string, string, number, string];
@@ -61,7 +62,8 @@ export function decodeParlay(p: string): FuturesLeg[] | null {
 // which redirects humans into the app with the parlay pre-loaded.
 export function shareUrl(legs: FuturesLeg[]): string {
   const enc = encodeParlay(legs);
+  const ref = getOrCreateRef();
   // Always route shares through the public site (rich unfurl + deep link),
   // even when generated inside the native app.
-  return `${SITE_URL}/s?p=${enc}`;
+  return `${SITE_URL}/s?p=${enc}&ref=${ref}`;
 }

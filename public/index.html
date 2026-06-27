@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PropParlay.ai - The Futures of Parlays</title>
-    <meta name="description" content="The first parlay app built around futures. Stack cross-sport title bets (World Series, Super Bowl, Stanley Cup) at each team's real win chance, plus nightly AI prop picks and real-time line shopping. Join the waitlist for early access.">
+    <meta name="description" content="The first parlay app built around futures. Stack cross-sport title bets at real win chances, explore the heat-map grid, and get nightly AI prop picks. Download free on the App Store.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -538,14 +538,14 @@
             <span class="lo-word"><b>prop</b> <i>parlay</i> <em>ai</em></span>
         </a>
         <div style="display:flex;align-items:center;gap:1rem;">
-            <a href="/app/" class="nav-cta" style="text-decoration:none;display:inline-block;">Preview<span class="cta-app">&nbsp;App</span></a>
-            <button class="nav-cta" onclick="document.getElementById('email').focus()">Join Waitlist</button>
+            <a href="/app/grid" class="nav-cta" style="text-decoration:none;display:inline-block;">Open<span class="cta-app">&nbsp;App</span></a>
+            <a href="https://apps.apple.com/us/search?term=PropParlay+AI+Sports" class="nav-cta" style="text-decoration:none;display:inline-block;background:linear-gradient(135deg,#34d399,#818cf8)">App Store</a>
         </div>
     </nav>
 
     <section class="hero hero-split">
         <div class="hero-head">
-            <div class="badge">Coming Soon - Early Access Available</div>
+            <div class="badge">Now on the App Store</div>
 
             <h1>
                 <span class="hero-eyebrow">Cross-sport &middot; futures</span><br>
@@ -562,20 +562,24 @@
                 Plus nightly AI prop picks and real-time line shopping.
             </p>
 
-            <form class="waitlist-form" id="waitlistForm">
+            <div class="waitlist-form" style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:center;">
+                <a href="/app/grid" class="nav-cta" style="text-decoration:none;display:inline-block;padding:0.85rem 1.5rem;font-size:1rem;">Open the app</a>
+                <a href="https://apps.apple.com/us/search?term=PropParlay+AI+Sports" class="nav-cta" style="text-decoration:none;display:inline-block;padding:0.85rem 1.5rem;font-size:1rem;background:linear-gradient(135deg,#34d399,#818cf8)">Download on the App Store</a>
+            </div>
+            <p class="form-note" id="formNote">Free on iPhone & iPad. No account required.</p>
+
+            <form class="waitlist-form" id="waitlistForm" style="margin-top:1.25rem;opacity:0.92">
                 <input
                     type="email"
                     id="email"
-                    placeholder="Enter your email"
-                    required
+                    placeholder="Email for product updates (optional)"
                     autocomplete="email"
                 >
-                <button type="submit">Get Early Access</button>
+                <button type="submit">Stay in the loop</button>
             </form>
-            <p class="form-note" id="formNote">Join the waitlist for early access. No spam, ever.</p>
 
             <div class="success-message" id="successMessage">
-                🎉 You're on the list! We'll notify you when we launch.
+                🎉 You're subscribed for product updates.
             </div>
 
             <p class="form-note" id="errorMessage" style="display:none; color: #f87171;"></p>
@@ -676,7 +680,7 @@
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data.count > 0) {
-                    formNote.textContent = `Join ${data.count} others on the waitlist. No spam, ever.`;
+                    formNote.textContent = `${data.count} bettors on our update list. No spam.`;
                 }
             } catch {
                 // count is optional — ignore
@@ -689,7 +693,15 @@
             const email = document.getElementById('email').value.trim();
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Joining...';
+            submitBtn.textContent = 'Saving...';
+
+            if (!email) {
+                errorMessage.textContent = 'Enter an email or use Download above.';
+                errorMessage.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Stay in the loop';
+                return;
+            }
 
             try {
                 const res = await fetch(`${window.location.origin}/api/waitlist`, {
@@ -716,7 +728,7 @@
                         "🎉 You're already on the list! We'll notify you when we launch.";
                 } else {
                     successMessage.textContent =
-                        "🎉 You're on the list! We'll email you when we launch. (No confirmation email right now.)";
+                        "🎉 You're subscribed — we'll send occasional product updates.";
                 }
                 await loadWaitlistCount();
             } catch (err) {
@@ -724,7 +736,7 @@
                 errorMessage.style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Get Early Access';
+                submitBtn.textContent = 'Stay in the loop';
             }
         });
 

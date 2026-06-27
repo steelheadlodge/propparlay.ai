@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import Logo from "./Logo";
-import { SITE_URL } from "../lib/config";
+import { APP_STORE_URL, SITE_URL } from "../lib/config";
 import styles from "./Layout.module.css";
 
 export default function Layout({
@@ -16,19 +16,10 @@ export default function Layout({
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <NavLink to="/" className={styles.logo} aria-label="prop parlay ai — home">
+        <NavLink to="/grid" className={styles.logo} aria-label="prop parlay ai — home">
           <Logo />
         </NavLink>
         <nav className={styles.nav}>
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `${styles.tab} ${isActive ? styles.tabActive : ""}`
-            }
-          >
-            Futures
-          </NavLink>
           <NavLink
             to="/grid"
             className={({ isActive }) =>
@@ -38,6 +29,14 @@ export default function Layout({
             Grid
           </NavLink>
           <NavLink
+            to="/futures"
+            className={({ isActive }) =>
+              `${styles.tab} ${isActive ? styles.tabActive : ""}`
+            }
+          >
+            Futures
+          </NavLink>
+          <NavLink
             to="/tonight"
             className={({ isActive }) =>
               `${styles.tab} ${isActive ? styles.tabActive : ""}`
@@ -45,7 +44,14 @@ export default function Layout({
           >
             Tonight
           </NavLink>
-          <a href="/" className={styles.navLink}>Landing</a>
+          <a
+            href={APP_STORE_URL}
+            className={styles.navLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Get app
+          </a>
         </nav>
       </header>
 

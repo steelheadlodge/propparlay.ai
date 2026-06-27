@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import type { FuturesLeg } from "../context/FuturesParlayContext";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
+import { isUnlocked } from "../lib/access";
+import UnlockModal from "./UnlockModal";
 import { needsLogoOutline } from "../lib/darkLogos";
 import { HEAT_META, heatTier } from "../lib/futuresHeat";
 import {
@@ -151,6 +153,8 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
   const [pins, setPins] = useState<FuturesLeg[]>([]);
   // How many teams to show per axis (defaults to a compact 6x6 board).
   const [shown, setShown] = useState<number>(6);
+  const [unlocked, setUnlocked] = useState(isUnlocked);
+  const [showUnlock, setShowUnlock] = useState(false);
   // Per-axis search filters.
   const [qy, setQy] = useState("");
   const [qx, setQx] = useState("");
@@ -220,6 +224,14 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
     );
   }
 
+  const tryShown = (n: number) => {
+    if (n > 6 && !unlocked) {
+      setShowUnlock(true);
+      return;
+    }
+    setShown(n);
+  };
+
   const selectedY = sel.y ? yOuts.find((o) => o.name === sel.y) : null;
   const selectedX = sel.x ? xOuts.find((o) => o.name === sel.x) : null;
   const bothSelected = !!selectedY && !!selectedX;
@@ -276,6 +288,12 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
 
   return (
     <div className={styles.wrap}>
+      <UnlockModal
+        open={showUnlock}
+        onClose={() => setShowUnlock(false)}
+        onUnlocked={() => setUnlocked(true)}
+        feature="the full 12×12 grid"
+      />
       <div className={styles.axisPickers}>
         <label className={styles.picker}>
           <span>Down ↓</span>
@@ -307,7 +325,7 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
                 key={n}
                 type="button"
                 className={`${styles.countBtn} ${shown === n ? styles.countActive : ""}`}
-                onClick={() => setShown(n)}
+                onClick={() => tryShown(n)}
               >
                 {n === 99 ? "All" : `${n}×${n}`}
               </button>

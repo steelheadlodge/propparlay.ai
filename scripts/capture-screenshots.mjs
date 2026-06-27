@@ -30,13 +30,13 @@ const SETS = [
       },
       {
         file: "02-futures.png",
-        route: "/",
+        route: "/futures",
         wait: { role: "heading", level: 1, name: "The futures of parlays" },
         scroll: { type: "role", role: "heading", level: 3, name: "Super Bowl Winner" },
       },
       {
         file: "03-ai-builder.png",
-        route: "/",
+        route: "/futures?shot=ai",
         wait: { role: "heading", level: 1, name: "The futures of parlays" },
         scroll: { type: "role", role: "heading", level: 2, name: "AI parlay builder" },
       },
@@ -61,7 +61,7 @@ const SETS = [
       },
       {
         file: "02-futures.png",
-        route: "/",
+        route: "/futures",
         wait: { role: "heading", level: 1, name: "The futures of parlays" },
         scroll: { type: "role", role: "heading", level: 3, name: "Super Bowl Winner" },
       },

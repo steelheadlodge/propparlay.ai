@@ -25,7 +25,6 @@ export default function FuturesSlip() {
   const payout = legs.length ? stake * decimal : 0;
   const profit = payout - stake;
 
-  // Two legs from the same market can't both win — flag it gently.
   const conflict = useMemo(() => {
     const seen = new Set<string>();
     for (const l of legs) {
@@ -42,24 +41,34 @@ export default function FuturesSlip() {
   };
 
   const shareText = useMemo(() => {
-    const names = legs.map((l) => l.name).join(" + ");
-    return `${names} to win it all — ${formatAmerican(american)} on PropParlay.ai`;
+    const names = legs.map((l) => l.displayName ?? l.name).join(" + ");
+    return `Built a cross-sport futures parlay: ${names} at ${formatAmerican(american)} on PropParlay`;
   }, [legs, american]);
 
-  const onShareLink = async () => {
+  const onShare = async () => {
     const url = shareUrl(legs);
     const nav = navigator as Navigator & {
+      canShare?: (data: ShareData) => boolean;
       share?: (data: ShareData) => Promise<void>;
     };
     try {
-      if (nav.share) {
+      const blob = await buildParlayImage(legs, american, payout, stake);
+      const file = new File([blob], "propparlay.png", { type: "image/png" });
+      if (nav.canShare?.({ files: [file], url }) && nav.share) {
+        await nav.share({
+          files: [file],
+          title: "PropParlay.ai",
+          text: shareText,
+          url,
+        });
+      } else if (nav.share) {
         await nav.share({ title: "PropParlay.ai", text: shareText, url });
       } else {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(`${shareText}\n${url}`);
         flashToast("Link copied!");
       }
     } catch {
-      /* user cancelled share — no-op */
+      /* user cancelled */
     }
   };
 
@@ -197,20 +206,12 @@ export default function FuturesSlip() {
                 </div>
               </div>
 
+              <button type="button" className={styles.sharePrimary} onClick={onShare}>
+                Share parlay
+              </button>
               <div className={styles.shareRow}>
-                <button
-                  type="button"
-                  className={styles.share}
-                  onClick={onShareLink}
-                >
-                  Share parlay
-                </button>
-                <button
-                  type="button"
-                  className={styles.saveCard}
-                  onClick={onSaveCard}
-                >
-                  Save card
+                <button type="button" className={styles.saveCard} onClick={onSaveCard}>
+                  Save image card
                 </button>
               </div>
 

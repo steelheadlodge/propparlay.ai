@@ -24,4 +24,6 @@ export type PropPick = {
   headshot?: string | null;
   projectionLabel?: string;
   zone?: string;
+  hitRateL5?: number;
+  hitRateL10?: number;
 };

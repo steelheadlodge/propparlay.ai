@@ -1,84 +1,33 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import FuturesMarketCard from "../components/FuturesMarketCard";
 import FuturesSlip from "../components/FuturesSlip";
 import Layout from "../components/Layout";
+import PickOfDayBanner from "../components/PickOfDayBanner";
 import SmartPicks from "../components/SmartPicks";
 import SportIcon from "../components/SportIcon";
-import type { FuturesLeg } from "../context/FuturesParlayContext";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
 import { useFutures } from "../hooks/useFutures";
-import {
-  americanToDecimal,
-  decimalToAmerican,
-  formatAmerican,
-} from "../lib/odds";
+import { buildPickOfDay } from "../lib/pickOfDay";
 import { decodeParlay } from "../lib/shareParlay";
 import { sportTheme } from "../lib/theme";
-import type { FuturesMarket } from "../types/futures";
 import styles from "./Futures.module.css";
-
-const US_LEAGUES = new Set(["NFL", "MLB", "NBA", "NHL", "NCAAF", "NCAAB", "WNBA"]);
-
-function buildExampleLegs(markets: FuturesMarket[]): FuturesLeg[] {
-  // One market per league (its top favorite), then prefer the biggest US-league
-  // favorites so the teaser reads with familiar names (e.g. Dodgers + Rams),
-  // falling back to other leagues if fewer than two US markets are live.
-  const byLeague = new Map<string, FuturesMarket>();
-  for (const m of markets) {
-    if (m.outcomes[0] && !byLeague.has(m.league)) byLeague.set(m.league, m);
-  }
-  const all = [...byLeague.values()];
-  const byPct = (a: FuturesMarket, b: FuturesMarket) =>
-    (b.outcomes[0]?.fairPct ?? 0) - (a.outcomes[0]?.fairPct ?? 0);
-  const us = all.filter((m) => US_LEAGUES.has(m.league)).sort(byPct);
-  const rest = all.filter((m) => !US_LEAGUES.has(m.league)).sort(byPct);
-
-  const picks: FuturesLeg[] = [];
-  for (const m of [...us, ...rest]) {
-    const o = m.outcomes[0];
-    if (!o) continue;
-    picks.push({
-      id: `${m.key}:${o.name}`,
-      league: m.league,
-      marketKey: m.key,
-      marketTitle: m.title,
-      name: o.name,
-      displayName: o.displayName,
-      abbr: o.abbr,
-      logo: o.logo,
-      price: o.price,
-      fairPct: o.fairPct,
-    });
-    if (picks.length >= 2) break;
-  }
-  return picks;
-}
 
 export default function Futures() {
   const state = useFutures();
   const { hydrate } = useFuturesParlay();
-  const hydrated = useRef(false);
   const [sharedNames, setSharedNames] = useState<string[] | null>(null);
   const [league, setLeague] = useState<string>("ALL");
 
-  // Load a shared parlay from ?p= once on mount.
   useEffect(() => {
-    if (hydrated.current) return;
-    hydrated.current = true;
-    const params = new URLSearchParams(window.location.search);
-    const p = params.get("p");
+    const p = new URLSearchParams(window.location.search).get("p");
     if (!p) return;
     const legs = decodeParlay(p);
-    if (legs) {
-      hydrate(legs);
-      setSharedNames(legs.map((l) => l.name));
-    }
-  }, [hydrate]);
+    if (legs) setSharedNames(legs.map((l) => l.name));
+  }, []);
 
   const markets = state.status === "ready" ? state.markets : [];
 
-  // App Store screenshot helper: /?shot=ai scrolls to the AI builder block.
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("shot") !== "ai") return;
     if (state.status !== "ready" || markets.length === 0) return;
@@ -87,18 +36,7 @@ export default function Futures() {
     });
   }, [state.status, markets.length]);
 
-  // A concrete two-team, cross-sport example used to teach the core idea:
-  // bet multiple title favorites at once for one combined payout.
-  const example = useMemo(() => {
-    const legs = buildExampleLegs(markets);
-    if (legs.length < 2) return null;
-    const decimal = legs.reduce((d, l) => d * americanToDecimal(l.price), 1);
-    return {
-      legs,
-      american: decimalToAmerican(decimal),
-      names: legs.map((l) => l.displayName ?? l.name),
-    };
-  }, [markets]);
+  const pickOfDay = useMemo(() => buildPickOfDay(markets), [markets]);
 
   const leagues = useMemo(
     () => [...new Set(markets.map((m) => m.league))],
@@ -116,39 +54,20 @@ export default function Futures() {
       subtitle="Stack cross-sport title bets — World Series, Super Bowl, Stanley Cup and more — at each team's real win chance. The first parlay lab built around futures."
     >
       {sharedNames && (
-        <a className={styles.tail} href="/#waitlistForm">
-          <span className={styles.tailIcon}>🎟️</span>
+        <div className={styles.tail}>
+          <span className={styles.tailIcon}>🔗</span>
           <span className={styles.tailText}>
-            <strong>You're viewing a shared parlay</strong>
+            <strong>Shared parlay loaded</strong>
             <span>
-              {sharedNames.join(" + ")} — it's loaded in your slip. Join the
-              waitlist to tail picks like this.
+              {sharedNames.join(" + ")} is in your slip — tap <strong>Share parlay</strong>{" "}
+              to send it to a friend.
             </span>
           </span>
-          <span className={styles.tailCta}>Join waitlist →</span>
-        </a>
+        </div>
       )}
 
-      {example && (
-        <button
-          type="button"
-          className={styles.headline}
-          onClick={() => hydrate(example.legs)}
-        >
-          <span className={styles.headlineHook}>
-            <span className={styles.headlineFlame}>🔥</span>
-            <span className={styles.headlineText}>
-              The whole idea: back two teams at once. Parlay the{" "}
-              <strong>{example.names[0]}</strong> &amp;{" "}
-              <strong>{example.names[1]}</strong> into one ticket that pays{" "}
-              <span className={styles.headlineOdds}>
-                {formatAmerican(example.american)}
-              </span>
-              .
-            </span>
-          </span>
-          <span className={styles.headlineCta}>Load this parlay →</span>
-        </button>
+      {pickOfDay && (
+        <PickOfDayBanner pick={pickOfDay} onLoad={() => hydrate(pickOfDay.legs)} />
       )}
 
       {state.status === "loading" ? (

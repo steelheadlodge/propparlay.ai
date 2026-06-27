@@ -1,0 +1,53 @@
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  width: 100%;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.08), rgba(99, 102, 241, 0.08));
+  color: #e2e8f0;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.banner:hover {
+  border-color: rgba(52, 211, 153, 0.45);
+  transform: translateY(-1px);
+}
+
+.tag {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.text {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.text strong {
+  color: #f8fafc;
+}
+
+.odds {
+  margin-left: 0.5rem;
+  color: #a5b4fc;
+  font-weight: 800;
+}
+
+.cta {
+  color: #34d399;
+  font-weight: 700;
+  font-size: 0.9rem;
+}

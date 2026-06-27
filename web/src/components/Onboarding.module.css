@@ -1,0 +1,100 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+@media (min-width: 640px) {
+  .backdrop {
+    align-items: center;
+  }
+}
+
+.card {
+  width: min(100%, 24rem);
+  padding: 1.5rem 1.35rem 1.25rem;
+  border-radius: 18px 18px 14px 14px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: linear-gradient(165deg, #1a2332 0%, #0f172a 100%);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.dot,
+.dotActive {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.dotActive {
+  width: 1.25rem;
+  background: #818cf8;
+}
+
+.icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.card h2 {
+  margin: 0.75rem 0 0.4rem;
+  font-size: 1.2rem;
+}
+
+.card p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.primary,
+.ghost {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary {
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #34d399);
+  color: #0f172a;
+}
+
+.ghost {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: transparent;
+  color: #e2e8f0;
+}
+
+.skip {
+  margin-top: 0.75rem;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.85rem;
+  cursor: pointer;
+}

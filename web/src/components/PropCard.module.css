@@ -81,6 +81,31 @@
   margin-bottom: 1.25rem;
 }
 
+.hitRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  margin: -0.5rem 0 0.85rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.55);
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.hitRow strong {
+  color: #e2e8f0;
+}
+
+.bestBookHint {
+  margin-left: auto;
+  color: #a5b4fc;
+}
+
+.bestBookHint strong {
+  color: #c4b5fd;
+}
+
 .headInfo {
   flex: 1;
   min-width: 0;

@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
 import { needsLogoOutline } from "../lib/darkLogos";
 import { HEAT_META, heatTier } from "../lib/futuresHeat";
+import { gradeFromFairPct } from "../lib/grades";
 import { formatAmerican, payoutFor } from "../lib/odds";
 import { sportTheme } from "../lib/theme";
+import GradeBadge from "./GradeBadge";
 import SportIcon from "./SportIcon";
 import type { FuturesMarket, FuturesOutcome } from "../types/futures";
 import styles from "./FuturesMarketCard.module.css";
@@ -28,6 +30,7 @@ function OutcomeRow({
   const inSlip = has(id);
   const tier = heatTier(outcome.fairPct);
   const meta = HEAT_META[tier];
+  const grade = gradeFromFairPct(outcome.fairPct);
   const [logoFailed, setLogoFailed] = useState(false);
 
   return (
@@ -52,6 +55,7 @@ function OutcomeRow({
       aria-pressed={inSlip}
     >
       <span className={styles.rank}>{rank}</span>
+      <GradeBadge grade={grade} compact />
       {outcome.logo && !logoFailed ? (
         <img
           src={outcome.logo}

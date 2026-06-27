@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import type { FuturesLeg } from "../context/FuturesParlayContext";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
+import { isUnlocked } from "../lib/access";
+import UnlockModal from "./UnlockModal";
 import {
   americanToDecimal,
   decimalToAmerican,
@@ -174,6 +176,24 @@ export default function SmartPicks({ markets }: { markets: FuturesMarket[] }) {
   const [shuffle, setShuffle] = useState(0);
   const [lockedKey, setLockedKey] = useState("");
   const [picks, setPicks] = useState<FuturesLeg[] | null>(null);
+  const [unlocked, setUnlocked] = useState(isUnlocked);
+  const [showUnlock, setShowUnlock] = useState(false);
+
+  const tryProfile = (id: Profile) => {
+    if ((id === "longshot" || id === "value") && !unlocked) {
+      setShowUnlock(true);
+      return;
+    }
+    setProfile(id);
+  };
+
+  const tryLegs = (n: number) => {
+    if (n > 3 && !unlocked) {
+      setShowUnlock(true);
+      return;
+    }
+    setLegCount(n);
+  };
 
   const maxLegs = Math.min(4, new Set(markets.map((m) => m.league)).size);
   const legs = Math.min(legCount, Math.max(2, maxLegs));
@@ -204,6 +224,12 @@ export default function SmartPicks({ markets }: { markets: FuturesMarket[] }) {
 
   return (
     <section className={styles.card}>
+      <UnlockModal
+        open={showUnlock}
+        onClose={() => setShowUnlock(false)}
+        onUnlocked={() => setUnlocked(true)}
+        feature="AI parlay strategies"
+      />
       <div className={styles.head}>
         <span className={styles.spark}>✨</span>
         <div>
@@ -221,7 +247,7 @@ export default function SmartPicks({ markets }: { markets: FuturesMarket[] }) {
             key={p.id}
             type="button"
             className={`${styles.profile} ${profile === p.id ? styles.profileActive : ""}`}
-            onClick={() => setProfile(p.id)}
+            onClick={() => tryProfile(p.id)}
           >
             <span className={styles.profileIcon}>{p.icon}</span>
             <span className={styles.profileLabel}>{p.label}</span>
@@ -239,7 +265,7 @@ export default function SmartPicks({ markets }: { markets: FuturesMarket[] }) {
               type="button"
               disabled={n > maxLegs}
               className={`${styles.legBtn} ${legs === n ? styles.legActive : ""}`}
-              onClick={() => setLegCount(n)}
+              onClick={() => tryLegs(n)}
             >
               {n}
             </button>

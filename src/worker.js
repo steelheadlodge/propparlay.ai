@@ -147,7 +147,7 @@ function supabaseHeaders(anonKey) {
   };
 }
 
-async function saveToKv(email, env) {
+async function saveToKv(email, env, source = "landing") {
   if (!env.WAITLIST) return { ok: false, skipped: true };
 
   const key = `email:${email}`;
@@ -157,7 +157,7 @@ async function saveToKv(email, env) {
   const record = JSON.stringify({
     email,
     created_at: new Date().toISOString(),
-    source: "landing",
+    source,
   });
 
   await env.WAITLIST.put(key, record);
@@ -185,7 +185,7 @@ async function getSupabaseCount(env) {
   return typeof count === "number" ? count : null;
 }
 
-async function saveToSupabase(email, env) {
+async function saveToSupabase(email, env, source = "landing") {
   const { url, anonKey } = supabaseConfig(env);
   const res = await fetch(`${url}/rest/v1/propparlay_waitlist`, {
     method: "POST",
@@ -194,7 +194,7 @@ async function saveToSupabase(email, env) {
       "Content-Type": "application/json",
       Prefer: "return=minimal",
     },
-    body: JSON.stringify({ email, source: "landing" }),
+    body: JSON.stringify({ email, source }),
   });
 
   if (res.ok) return { ok: true, duplicate: false, store: "supabase" };
@@ -232,13 +232,41 @@ async function notifyViaResend(email, env) {
   }
 }
 
+// Increment a share referrer's click counter. KV has no atomic increment, but
+// rough attribution is fine here; runs via ctx.waitUntil so it never blocks the
+// redirect/HTML response.
+async function bumpRefClick(env, ref) {
+  if (!env?.WAITLIST || !ref) return;
+  const key = `ref:${ref}:clicks`;
+  try {
+    const current = parseInt((await env.WAITLIST.get(key)) || "0", 10);
+    await env.WAITLIST.put(key, String(current + 1));
+  } catch {
+    /* best-effort attribution */
+  }
+}
+
+async function getRefClicks(env, ref) {
+  if (!env?.WAITLIST || !ref) return 0;
+  try {
+    return parseInt((await env.WAITLIST.get(`ref:${ref}:clicks`)) || "0", 10);
+  } catch {
+    return 0;
+  }
+}
+
 function shareLanding(url) {
   const p = url.searchParams.get("p") || "";
+  const ref = url.searchParams.get("ref") || "";
   const legs = decodeParlay(p);
-  const appUrl = legs ? `/app/?p=${encodeURIComponent(p)}` : "/app/";
+  const qs = new URLSearchParams();
+  if (p) qs.set("p", p);
+  if (ref) qs.set("ref", ref);
+  const q = qs.toString();
+  const appUrl = q ? `/app/grid?${q}` : "/app/grid";
 
   if (!legs) {
-    return Response.redirect(`${url.origin}/app/`, 302);
+    return Response.redirect(`${url.origin}${appUrl}`, 302);
   }
 
   const { american } = combinedAmerican(legs);
@@ -288,6 +316,7 @@ function shareLanding(url) {
   <div class="odds">${escapeHtml(formatAmerican(american))}</div>
   <div style="color:#94a3b8">$10 returns $${payout}</div>
   <a class="cta" href="${escapeHtml(appUrl)}">Open this parlay →</a>
+  <a class="cta secondary" href="https://apps.apple.com/us/search?term=PropParlay+AI+Sports" style="margin-top:.35rem;background:transparent;border:1px solid rgba(129,140,248,.45);color:#c7d2fe">Get the app</a>
 </div>
 <script>setTimeout(function(){location.replace(${JSON.stringify(appUrl)})},1200);</script>
 </body>
@@ -399,8 +428,10 @@ export default {
         return Response.json({ error: "Invalid email" }, { status: 400 });
       }
 
-      const kvResult = await saveToKv(email, env);
-      const supabaseResult = await saveToSupabase(email, env);
+      const source = String(payload?.source || "landing").slice(0, 32);
+
+      const kvResult = await saveToKv(email, env, source);
+      const supabaseResult = await saveToSupabase(email, env, source);
       const isDuplicate = kvResult.duplicate || supabaseResult.duplicate;
 
       // Formspree runs in the browser (see public/index.html) — server posts go to spam.
@@ -505,12 +536,21 @@ export default {
       }
     }
 
+    // Read a share referrer's click count (viral attribution dashboard/debug).
+    if (url.pathname === "/api/ref" && request.method === "GET") {
+      const ref = url.searchParams.get("r") || "";
+      if (!ref) return Response.json({ error: "Missing ref" }, { status: 400 });
+      return Response.json({ ref, clicks: await getRefClicks(env, ref) });
+    }
+
     if (url.pathname.startsWith("/api/")) {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
 
     // Shareable parlay link: rich OG unfurl for crawlers, redirect for humans.
     if (url.pathname === "/s") {
+      const ref = url.searchParams.get("ref");
+      if (ref) ctx.waitUntil(bumpRefClick(env, ref));
       return shareLanding(url);
     }
 
