@@ -23,6 +23,14 @@ binding). **Formspree** (form `xjgdnazp`) is the email pipe. App OTA updates shi
 2. Push to `main`. Cloudflare auto-builds (`npm run build:web`) and runs `wrangler deploy`.
 3. Live at propparlay.ai; React app serves under `/app/*`.
 
+> ⚠️ **Every push to `main` also triggers an Xcode Cloud native build** (emails come
+> from `noreply@apple.com` / "Xcode Cloud"). That CI clones a clean repo with no
+> `node_modules` and no built web bundle, so Capacitor's `CapApp-SPM/Package.swift`
+> (which points at `../../../node_modules/@capacitor/*`) can't resolve packages. The
+> fix lives at `web/ios/App/ci_scripts/ci_post_clone.sh` — it installs Node, runs
+> `npm ci`, `npm run build:native`, and `npx cap sync ios`. Keep that script in sync
+> with `web/package.json`; do not delete it or native builds break.
+
 **Native app OTA (Capgo):**
 1. `cd web && npm run build:native` to produce the `dist` bundle.
 2. Upload the bundle to Capgo (`production` channel) → OTA to installed apps. No store review.
@@ -44,4 +52,9 @@ React 19, React Router, Vite, TypeScript, CSS Modules · Capacitor 8 (ios/androi
   rule in `.cursor/rules/resume-context.mdc` tells the agent to read this file + git state at
   session start.
 - Landing hero leads with live cross-sport futures heat-map grid; App Store screenshots updated.
-- Uncommitted Capgo/native config changes in `web/` may still need committing.
+- App is **live on the App Store** (`id6782497602`). Growth features shipped via Capgo OTA
+  (bundle `1.0.1`): open-on-grid, onboarding, Pick of the Day, grades, share loop, soft email gate.
+- ⏳ **Capgo trial expires ~2026-07-06** (was "9 days" on 2026-06-27). After that, OTA updates
+  stop until a paid plan is chosen at console.capgo.app. Pick a plan before then.
+- Fixed failing Xcode Cloud native builds by adding `web/ios/App/ci_scripts/ci_post_clone.sh`
+  (see "How to ship a change" warning above).
