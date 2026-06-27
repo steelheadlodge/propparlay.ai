@@ -4,9 +4,9 @@ import { Capacitor } from "@capacitor/core";
 // site even from inside a native app (where the web view origin is localhost).
 export const SITE_URL = "https://propparlay.ai";
 
-// App Store listing — update id when Connect provides the numeric app id.
+// App Store listing.
 export const APP_STORE_URL =
-  "https://apps.apple.com/us/search?term=PropParlay+AI+Sports";
+  "https://apps.apple.com/us/app/propparlay/id6782497602";
 
 // In native apps the web view loads from capacitor://localhost, so relative
 // "/api/*" calls would hit the device, not the worker. Point them at the live

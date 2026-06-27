@@ -316,7 +316,7 @@ function shareLanding(url) {
   <div class="odds">${escapeHtml(formatAmerican(american))}</div>
   <div style="color:#94a3b8">$10 returns $${payout}</div>
   <a class="cta" href="${escapeHtml(appUrl)}">Open this parlay →</a>
-  <a class="cta secondary" href="https://apps.apple.com/us/search?term=PropParlay+AI+Sports" style="margin-top:.35rem;background:transparent;border:1px solid rgba(129,140,248,.45);color:#c7d2fe">Get the app</a>
+  <a class="cta secondary" href="https://apps.apple.com/us/app/propparlay/id6782497602" style="margin-top:.35rem;background:transparent;border:1px solid rgba(129,140,248,.45);color:#c7d2fe">Get the app</a>
 </div>
 <script>setTimeout(function(){location.replace(${JSON.stringify(appUrl)})},1200);</script>
 </body>
