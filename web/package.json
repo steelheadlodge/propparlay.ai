@@ -9,9 +9,15 @@
     "preview": "vite preview",
     "cap:sync": "npm run build:native && cap sync",
     "ios": "npm run cap:sync && cap open ios",
-    "android": "npm run cap:sync && cap open android"
+    "android": "npm run cap:sync && cap open android",
+    "shots:capture": "node ../scripts/capture-screenshots.mjs",
+    "shots:matrix": "node ../scripts/capture-screenshots.mjs --matrix-only",
+    "shots:compose": "node ../scripts/compose-screenshots.mjs",
+    "shots:layouts": "node ../scripts/preview-layout-variants.mjs",
+    "shots": "npm run shots:capture && npm run shots:compose"
   },
   "dependencies": {
+    "@capacitor-community/in-app-review": "^8.0.0",
     "@capacitor/app": "^8.1.0",
     "@capacitor/core": "^8.4.1",
     "@capacitor/haptics": "^8.0.2",

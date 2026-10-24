@@ -1,8 +1,11 @@
 import { useEffect, useRef } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { App as CapApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
+import { Navigate, Route, Routes, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
 import { ParlayProvider } from "./context/ParlayContext";
 import { FuturesParlayProvider, useFuturesParlay } from "./context/FuturesParlayContext";
+import { pathFromIncomingUrl } from "./lib/deepLink";
 import { decodeParlay } from "./lib/shareParlay";
 import Dashboard from "./pages/Dashboard";
 import Futures from "./pages/Futures";
@@ -10,18 +13,39 @@ import Matrix from "./pages/Matrix";
 
 function SharedParlayLoader() {
   const { hydrate } = useFuturesParlay();
-  const loaded = useRef(false);
+  const [params] = useSearchParams();
+  const p = params.get("p");
+  const loaded = useRef<string | null>(null);
 
   useEffect(() => {
-    if (loaded.current) return;
-    const p = new URLSearchParams(window.location.search).get("p");
-    if (!p) return;
+    if (!p || loaded.current === p) return;
     const legs = decodeParlay(p);
-    if (legs) {
-      loaded.current = true;
-      hydrate(legs);
-    }
-  }, [hydrate]);
+    if (!legs) return;
+    loaded.current = p;
+    hydrate(legs);
+  }, [p, hydrate]);
+
+  return null;
+}
+
+function DeepLinkListener() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let remove = () => {};
+    const open = (raw: string) => {
+      const dest = pathFromIncomingUrl(raw);
+      if (dest) navigate(dest, { replace: true });
+    };
+    void CapApp.addListener("appUrlOpen", (event) => open(event.url)).then((handle) => {
+      remove = () => void handle.remove();
+    });
+    void CapApp.getLaunchUrl().then((launch) => {
+      if (launch?.url) open(launch.url);
+    });
+    return () => remove();
+  }, [navigate]);
 
   return null;
 }
@@ -37,6 +61,7 @@ function AppShell() {
   return (
     <>
       <SharedParlayLoader />
+      <DeepLinkListener />
       <Onboarding open={show} onDone={dismiss} />
       <Routes>
         <Route path="/" element={<HomeRedirect />} />

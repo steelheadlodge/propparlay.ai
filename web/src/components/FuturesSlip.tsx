@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
 import {
   americanToDecimal,
@@ -8,6 +8,7 @@ import {
 import AnimatedNumber from "./AnimatedNumber";
 import { needsLogoOutline } from "../lib/darkLogos";
 import { buildParlayImage } from "../lib/parlayImage";
+import { maybeAskForReview } from "../lib/review";
 import { shareUrl } from "../lib/shareParlay";
 import styles from "./FuturesSlip.module.css";
 
@@ -34,6 +35,16 @@ export default function FuturesSlip() {
     }
     return false;
   }, [legs]);
+
+  const prevLegCount = useRef(legs.length);
+  useEffect(() => {
+    const prev = prevLegCount.current;
+    prevLegCount.current = legs.length;
+    // A single added leg (not a shared slip being hydrated in bulk) is a built parlay.
+    if (legs.length === prev + 1 && legs.length >= 2) {
+      window.setTimeout(() => void maybeAskForReview("built"), 1500);
+    }
+  }, [legs.length]);
 
   const flashToast = (msg: string) => {
     setToast(msg);
@@ -67,6 +78,7 @@ export default function FuturesSlip() {
         await navigator.clipboard.writeText(`${shareText}\n${url}`);
         flashToast("Link copied!");
       }
+      window.setTimeout(() => void maybeAskForReview("share"), 1200);
     } catch {
       /* user cancelled */
     }

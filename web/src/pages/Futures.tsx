@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import FuturesMarketCard from "../components/FuturesMarketCard";
 import FuturesSlip from "../components/FuturesSlip";
 import Layout from "../components/Layout";
@@ -19,12 +19,14 @@ export default function Futures() {
   const [sharedNames, setSharedNames] = useState<string[] | null>(null);
   const [league, setLeague] = useState<string>("ALL");
 
+  const [params] = useSearchParams();
+  const sharedParam = params.get("p");
+
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get("p");
-    if (!p) return;
-    const legs = decodeParlay(p);
-    if (legs) setSharedNames(legs.map((l) => l.name));
-  }, []);
+    if (!sharedParam) return;
+    const legs = decodeParlay(sharedParam);
+    setSharedNames(legs ? legs.map((l) => l.name) : null);
+  }, [sharedParam]);
 
   const markets = state.status === "ready" ? state.markets : [];
 

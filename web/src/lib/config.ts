@@ -8,6 +8,10 @@ export const SITE_URL = "https://propparlay.ai";
 export const APP_STORE_URL =
   "https://apps.apple.com/us/app/propparlay/id6782497602?pt=128930091&ct=webapp&mt=8";
 
+// Opens the App Store write-a-review form. Separate from the in-app system prompt.
+export const WRITE_REVIEW_URL =
+  "https://apps.apple.com/app/id6782497602?action=write-review";
+
 // In native apps the web view loads from capacitor://localhost, so relative
 // "/api/*" calls would hit the device, not the worker. Point them at the live
 // origin. On the web build, stay relative so it works on any origin/preview.

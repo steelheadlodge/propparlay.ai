@@ -17,7 +17,7 @@ built with Capacitor and **builds + runs successfully** on the simulator.
 | Field | Value |
 |-------|-------|
 | App name | **PropParlay** |
-| Subtitle (iOS, 30 char) | Cross-sport parlay lab |
+| Subtitle (iOS, 30 char) | Brighter green, better odds |
 | Bundle ID | `ai.propparlay.app` |
 | Category | Sports (primary) |
 | Age rating | **Gambling: Yes**, **Simulated Gambling: None**, **Contests: None** |
@@ -30,23 +30,22 @@ built with Capacitor and **builds + runs successfully** on the simulator.
 
 | Device | Folder | Size | Count |
 |--------|--------|------|-------|
-| iPhone 6.9" | `store/iphone-6.9/` | 1290 × 2796 | 4 |
-| iPad 13" | `store/ipad-13/` | 2064 × 2752 | 3 |
+| iPhone 6.9" | `store/iphone-6.9/` | 1290 × 2796 | 5 |
+| iPad 13" | `store/ipad-13/` | 2064 × 2752 | 4 |
 
 These are the only two screenshot sizes App Store Connect requires in 2026
 (6.9" iPhone + 13" iPad cover all smaller devices). Unframed raw captures are in
 `store/raw/` if you ever want plain device shots.
 
 **Screenshot order (lead with the hook):** the cross-sport **futures heat-map
-grid** is screenshot **#1** on both devices — it's the differentiator that
-explains the whole product at a glance and is the strongest reason to try
-futures parlays. iPhone order: Grid → Futures lab → AI builder → Tonight. iPad
-order: Grid → Futures lab → Tonight.
+grid** spans screenshots **#1 and #2** as a panorama pair (crosshair layout).
+iPhone order: Grid pair → AI builder → Share → Tonight (5 total). iPad order:
+Grid pair → Futures board → Tonight (4 total).
 
 ## Listing copy
 
 **Promotional text (170 char)**
-> See futures as a heat map: pick a team down, one across, and the grid shows your cross-sport parlay's real odds & win chance. Greener = likelier to hit. Plus AI picks.
+> Futures as a heat map. The brighter the green, the better the odds. Stack a cross-sport parlay and see the real combined chance. Free on iPhone and iPad.
 
 **Description**
 > PropParlay is the parlay lab built around futures. Instead of grinding single

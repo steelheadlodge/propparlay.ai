@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import Logo from "./Logo";
-import { APP_STORE_URL, SITE_URL } from "../lib/config";
+import { Capacitor } from "@capacitor/core";
+import { APP_STORE_URL, SITE_URL, WRITE_REVIEW_URL, isNative } from "../lib/config";
 import styles from "./Layout.module.css";
 
 export default function Layout({
@@ -91,6 +92,14 @@ export default function Layout({
           <a href={`${SITE_URL}/support`} target="_blank" rel="noopener noreferrer">
             Support
           </a>
+          {(!isNative || Capacitor.getPlatform() === "ios") && (
+            <>
+              <span aria-hidden>·</span>
+              <a href={WRITE_REVIEW_URL} target="_blank" rel="noopener noreferrer">
+                Rate
+              </a>
+            </>
+          )}
           <span aria-hidden>·</span>
           <span>© 2026 PropParlay.ai</span>
         </div>

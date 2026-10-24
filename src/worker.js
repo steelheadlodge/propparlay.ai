@@ -569,6 +569,35 @@ export default {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
 
+    // Lets iOS open shared parlays in the installed app (Associated Domains).
+    if (url.pathname === "/.well-known/apple-app-site-association") {
+      return new Response(
+        JSON.stringify({
+          applinks: {
+            details: [
+              {
+                appIDs: ["H8R3K9P5AC.ai.propparlay.app"],
+                components: [
+                  { "/": "/s" },
+                  { "/": "/s/*" },
+                  { "/": "/app/grid" },
+                  { "/": "/app/grid/*" },
+                  { "/": "/app/futures" },
+                  { "/": "/app/futures/*" },
+                ],
+              },
+            ],
+          },
+        }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "public, max-age=3600",
+          },
+        },
+      );
+    }
+
     // Shareable parlay link: rich OG unfurl for crawlers, redirect for humans.
     if (url.pathname === "/s") {
       const ref = url.searchParams.get("ref");

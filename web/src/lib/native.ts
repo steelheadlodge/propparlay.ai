@@ -2,6 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
+import { noteSession } from "./review";
 
 // Native-only setup: light status-bar text on the dark theme, then dismiss the
 // launch splash once the web view is ready. No-ops on the web build.
@@ -30,4 +31,6 @@ export async function initNative(): Promise<void> {
   } catch {
     /* splash plugin unavailable — ignore */
   }
+
+  noteSession();
 }
