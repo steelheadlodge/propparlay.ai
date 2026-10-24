@@ -48,7 +48,7 @@ const LEAGUE_BY_PREFIX = [
 // Safety cap on markets fetched per build to protect the request quota.
 // Each market costs 1 Odds API credit; the route is KV-cached ~24h (one global
 // refresh/day), so this is roughly the max credits/day the board can spend.
-const MAX_MARKETS = 26;
+const MAX_MARKETS = 12;
 // Cap outright fields so payloads stay sane on huge markets (e.g. 48-nation
 // World Cup, full MVP races) while still showing the entire realistic field.
 const MAX_OUTCOMES = 64;

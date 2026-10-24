@@ -487,19 +487,33 @@ export default {
       }
     }
 
-    // Live prop slate (cards) from The Odds API, edge-cached 15 min to protect
-    // the request quota. Reuses the same cached game-odds payload as /api/odds
-    // (via the shared "odds:games:v1" key) so a slate build no longer spends a
-    // second set of game-odds credits. Falls back to { configured: false }.
+    // Live prop slate (cards) from The Odds API. One build costs ~22 credits
+    // (game odds + props for 6 events), so it lives in global KV and refreshes
+    // at most every 3h for every user and colo, keeping the last good slate
+    // when credits run out instead of going blank.
     if (url.pathname === "/api/slate" && request.method === "GET") {
       try {
-        const data = await cachedJson("slate:v3", 900, async () => {
-          const games = await cachedJson("odds:games:v1", 120, () =>
-            getGameOdds(env),
-          );
-          return buildSlate(env, games);
-        });
-        return jsonResponse(data);
+        const data = await kvSwr(
+          env,
+          ctx,
+          "slate:v4",
+          3 * 60 * 60,
+          async () => {
+            const { remaining } = getOddsQuota();
+            if (typeof remaining === "number" && remaining < 30) {
+              return { configured: true, props: [], error: "quota" };
+            }
+            const games = await getGameOdds(env);
+            return buildSlate(env, games);
+          },
+          (d) => Array.isArray(d?.props) && d.props.length > 0,
+        );
+        // A kept-over slate must never show games that already finished.
+        const cutoff = Date.now() - 4 * 60 * 60 * 1000;
+        const props = (data?.props ?? []).filter(
+          (p) => p.startMs == null || p.startMs > cutoff,
+        );
+        return jsonResponse({ ...data, props });
       } catch (err) {
         console.error("slate failed", err);
         return jsonResponse({ configured: true, props: [], error: "Slate unavailable" }, 502);

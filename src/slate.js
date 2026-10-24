@@ -189,6 +189,7 @@ async function buildEventCards(env, event) {
       sport: event.league,
       market: meta.label,
       zone: meta.zone,
+      startMs: event.commenceMs ?? null,
       gameTime: event.commenceMs
         ? new Date(event.commenceMs).toLocaleTimeString("en-US", {
             hour: "numeric",
