@@ -9,6 +9,7 @@ import {
   logoUrl,
   escapeHtml,
 } from "./share.js";
+import { svgToPng } from "./og-png.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -278,7 +279,7 @@ function shareLanding(url) {
   const names = legs.map((l) => l.name).join(" + ");
   const title = `${names} — ${formatAmerican(american)}`;
   const desc = `${legs.length}-leg futures parlay · $10 returns $${payout} · built on PropParlay.ai, the futures of parlays.`;
-  const ogImg = `${url.origin}/og.svg?p=${encodeURIComponent(p)}`;
+  const ogImg = `${url.origin}/og.png?p=${encodeURIComponent(p)}`;
 
   const html = `<!doctype html>
 <html lang="en">
@@ -335,11 +336,33 @@ if(!/iPhone|iPad|iPod/.test(navigator.userAgent)){setTimeout(function(){location
 }
 
 function shareImage(url) {
-  const p = url.searchParams.get("p") || "";
-  const legs = decodeParlay(p);
-  if (!legs) {
-    return new Response("not found", { status: 404 });
-  }
+  const svg = shareSvg(decodeParlay(url.searchParams.get("p") || ""));
+  if (!svg) return new Response("not found", { status: 404 });
+  return new Response(svg, {
+    headers: {
+      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=86400",
+    },
+  });
+}
+
+async function shareImagePng(request, url, env, ctx) {
+  const svg = shareSvg(decodeParlay(url.searchParams.get("p") || ""));
+  if (!svg) return new Response("not found", { status: 404 });
+  const cache = caches.default;
+  const key = new Request(url.toString());
+  const hit = await cache.match(key);
+  if (hit) return hit;
+  const png = await svgToPng(svg, env, url.origin);
+  const res = new Response(png, {
+    headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" },
+  });
+  ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
+}
+
+function shareSvg(legs) {
+  if (!legs) return null;
 
   const decimal = legs.reduce(
     (acc, l) => acc * (l.price > 0 ? 1 + l.price / 100 : 1 + 100 / Math.abs(l.price)),
@@ -396,12 +419,7 @@ function shareImage(url) {
   <text x="1108" y="586" text-anchor="end" font-size="46" font-weight="800" fill="#f1f5f9">$${payout}</text>
 </svg>`;
 
-  return new Response(svg, {
-    headers: {
-      "Content-Type": "image/svg+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=86400",
-    },
-  });
+  return svg;
 }
 
 export default {
@@ -558,9 +576,13 @@ export default {
       return shareLanding(url);
     }
 
-    // Dynamically rendered OG image (SVG) for a shared parlay.
+    // Dynamically rendered OG image for a shared parlay. SVG kept for links
+    // already cached by crawlers; share pages now point at the PNG.
     if (url.pathname === "/og.svg") {
       return shareImage(url);
+    }
+    if (url.pathname === "/og.png") {
+      return shareImagePng(request, url, env, ctx);
     }
 
     // SPA fallback for React app at /app/*
