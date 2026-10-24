@@ -2,7 +2,8 @@ import { Capacitor } from "@capacitor/core";
 import { InAppReview } from "@capacitor-community/in-app-review";
 
 // Apple shows the system dialog at most a few times a year and may ignore the
-// call. We only ask after a win, and never twice inside two weeks.
+// call. We only ask after a positive moment (a share, or the 3rd app open),
+// never while the user is mid-task, and never twice inside two weeks.
 const KEY = "pp-review-v1";
 const MIN_GAP_MS = 14 * 24 * 60 * 60 * 1000;
 const MAX_PROMPTS = 3;
@@ -47,7 +48,7 @@ export function noteSession(): void {
 }
 
 export async function maybeAskForReview(
-  reason: "session" | "share" | "built",
+  reason: "session" | "share",
 ): Promise<void> {
   if (!isIosApp()) return;
   try {

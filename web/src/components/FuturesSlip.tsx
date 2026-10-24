@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
 import {
   americanToDecimal,
@@ -35,16 +35,6 @@ export default function FuturesSlip() {
     }
     return false;
   }, [legs]);
-
-  const prevLegCount = useRef(legs.length);
-  useEffect(() => {
-    const prev = prevLegCount.current;
-    prevLegCount.current = legs.length;
-    // A single added leg (not a shared slip being hydrated in bulk) is a built parlay.
-    if (legs.length === prev + 1 && legs.length >= 2) {
-      window.setTimeout(() => void maybeAskForReview("built"), 1500);
-    }
-  }, [legs.length]);
 
   const flashToast = (msg: string) => {
     setToast(msg);
