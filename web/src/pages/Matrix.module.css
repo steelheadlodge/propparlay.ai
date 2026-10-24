@@ -24,6 +24,10 @@
   font-size: 0.9rem;
 }
 
+.below {
+  margin-top: 1.5rem;
+}
+
 .crossLink {
   display: flex;
   align-items: center;

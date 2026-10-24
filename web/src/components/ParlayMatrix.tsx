@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FuturesLeg } from "../context/FuturesParlayContext";
 import { useFuturesParlay } from "../context/FuturesParlayContext";
 import { isUnlocked } from "../lib/access";
@@ -9,7 +9,6 @@ import {
   americanToDecimal,
   decimalToAmerican,
   formatAmerican,
-  formatCurrency,
   payoutFor,
 } from "../lib/odds";
 import type { FuturesMarket, FuturesOutcome } from "../types/futures";
@@ -68,9 +67,12 @@ function outcomeInsights(
 
   list.push({
     icon: "🏦",
-    text: `Priced across ${o.books} book${o.books === 1 ? "" : "s"} — ${
-      o.books >= 4 ? "strong" : "limited"
-    } market consensus.`,
+    text:
+      o.books === 1
+        ? `Priced at ${o.book || "the sportsbook"}.`
+        : `Priced across ${o.books} books — ${
+            o.books >= 4 ? "strong" : "limited"
+          } market consensus.`,
   });
 
   return list;
@@ -84,9 +86,16 @@ function parlayRead(tiers: ReturnType<typeof heatTier>[]): string {
     return `All ${n} picks are well-backed — the safest cross-sport stack you can build here. Smaller payout, but the best shot to actually cash.`;
   if (strong === 0)
     return `Every leg is a long shot — a true lottery ticket. Small chance they all land, but the payout is massive if they do.`;
-  return `${strong} solid pick${strong > 1 ? "s" : ""} anchored by ${weak} long shot${
+  return `${strong} solid pick${
+    strong > 1 ? "s" : ""
+  } anchored by ${weak} long shot${
     weak > 1 ? "s" : ""
   } — the underdogs drive the payout, but you need every leg to land.`;
+}
+
+function shortTitle(m: FuturesMarket): string {
+  const t = m.title.replace(/\s*Winner$/i, "");
+  return /^championship$/i.test(t) ? `${m.league} title` : `${m.league} · ${t}`;
 }
 
 function fmtPct(p: number): string {
@@ -110,13 +119,7 @@ function legOf(market: FuturesMarket, o: FuturesOutcome): FuturesLeg {
   };
 }
 
-function Avatar({
-  o,
-  league,
-}: {
-  o: FuturesOutcome;
-  league: string;
-}) {
+function Avatar({ o, league }: { o: FuturesOutcome; league: string }) {
   if (!o.logo) {
     return <span className={styles.logoFallback}>{o.abbr ?? "?"}</span>;
   }
@@ -132,7 +135,11 @@ function Avatar({
   );
 }
 
-export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) {
+export default function ParlayMatrix({
+  markets,
+}: {
+  markets: FuturesMarket[];
+}) {
   const { toggle, has } = useFuturesParlay();
 
   // Default axes: row = first market, column = first market in another league.
@@ -187,33 +194,45 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
       (o.displayName ?? o.name).toLowerCase().includes(term),
     );
   };
-  const yOuts = useMemo(
-    () => filterOuts(yMarket, qy),
-    [yMarket, shown, qy],
-  );
-  const xOuts = useMemo(
-    () => filterOuts(xMarket, qx),
-    [xMarket, shown, qx],
-  );
+  const yOuts = useMemo(() => filterOuts(yMarket, qy), [yMarket, shown, qy]);
+  const xOuts = useMemo(() => filterOuts(xMarket, qx), [xMarket, shown, qx]);
 
   // Normalize combined win probability across the grid for the heat map, and
   // find the single "safest" (most likely) combo to flag as the hot spot.
-  const { minP, maxP, hotKey } = useMemo(() => {
+  const { minP, maxP, hotKey, hotY, hotX } = useMemo(() => {
     let lo = Infinity;
     let hi = -Infinity;
-    let hot = "";
+    let hy: FuturesOutcome | null = null;
+    let hx: FuturesOutcome | null = null;
     for (const y of yOuts) {
       for (const x of xOuts) {
         const p = (y.fairPct / 100) * (x.fairPct / 100);
         if (p < lo) lo = p;
         if (p > hi) {
           hi = p;
-          hot = `${y.name}|${x.name}`;
+          hy = y;
+          hx = x;
         }
       }
     }
-    return { minP: lo, maxP: hi, hotKey: hot };
+    return {
+      minP: lo,
+      maxP: hi,
+      hotKey: hy && hx ? `${hy.name}|${hx.name}` : "",
+      hotY: hy as FuturesOutcome | null,
+      hotX: hx as FuturesOutcome | null,
+    };
   }, [yOuts, xOuts]);
+
+  const detailRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (sel.x && sel.y) {
+      detailRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [sel.x, sel.y]);
 
   if (!xMarket || !yMarket || xMarket.key === yMarket.key) {
     return (
@@ -237,10 +256,7 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
   const bothSelected = !!selectedY && !!selectedX;
 
   // Pinned legs multiply into every cell's odds and payout.
-  const pinsDecimal = pins.reduce(
-    (d, l) => d * americanToDecimal(l.price),
-    1,
-  );
+  const pinsDecimal = pins.reduce((d, l) => d * americanToDecimal(l.price), 1);
   const pinsProb = pins.reduce((p, l) => p * (l.fairPct / 100), 1);
 
   const comboDecimal =
@@ -283,7 +299,7 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
   const heatFor = (y: FuturesOutcome, x: FuturesOutcome) => {
     const p = (y.fairPct / 100) * (x.fairPct / 100);
     const t = maxP > minP ? (p - minP) / (maxP - minP) : 0;
-    return 0.05 + t * 0.5;
+    return 0.06 + t * 0.7;
   };
 
   return (
@@ -296,27 +312,72 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
       />
       <div className={styles.axisPickers}>
         <label className={styles.picker}>
-          <span>Down ↓</span>
+          <span>Rows ↓</span>
           <select value={yMarket.key} onChange={(e) => changeY(e.target.value)}>
             {markets.map((m) => (
               <option key={m.key} value={m.key}>
-                {m.league} · {m.title}
+                {shortTitle(m)}
               </option>
             ))}
           </select>
         </label>
         <label className={styles.picker}>
-          <span>Across →</span>
+          <span>Columns →</span>
           <select value={xMarket.key} onChange={(e) => changeX(e.target.value)}>
             {markets
               .filter((m) => m.key !== yMarket.key)
               .map((m) => (
                 <option key={m.key} value={m.key}>
-                  {m.league} · {m.title}
+                  {shortTitle(m)}
                 </option>
               ))}
           </select>
         </label>
+      </div>
+
+      {hotY && hotX && (
+        <button
+          type="button"
+          className={styles.hotCallout}
+          onClick={() => setSel({ y: hotY.name, x: hotX.name })}
+        >
+          <span className={styles.hotTag}>🔥 Safest combo</span>
+          <span className={styles.hotNames}>
+            {hotY.displayName ?? hotY.name} + {hotX.displayName ?? hotX.name}
+          </span>
+          <span className={styles.hotPay}>
+            $10 pays $
+            {payoutFor(
+              decimalToAmerican(
+                americanToDecimal(hotY.price) *
+                  americanToDecimal(hotX.price) *
+                  pinsDecimal,
+              ),
+            ).toLocaleString()}{" "}
+            →
+          </span>
+        </button>
+      )}
+
+      <div className={styles.scale} aria-hidden="true">
+        <span>Long shot</span>
+        <span className={styles.scaleBar} />
+        <span>Most likely</span>
+      </div>
+      <p className={styles.cellKey}>
+        In each square: <strong>combined odds</strong>, then what{" "}
+        <strong className={styles.cellKeyPay}>$10 pays</strong>.
+        {pins.length > 0 && (
+          <strong className={styles.legendPins}>
+            {" "}
+            Every square includes your {pins.length} extra leg
+            {pins.length > 1 ? "s" : ""}.
+          </strong>
+        )}
+      </p>
+
+      <details className={styles.more} open={pins.length > 0 || undefined}>
+        <summary>More options: size, search, 3rd team</summary>
         <div className={styles.picker}>
           <span>Teams</span>
           <div className={styles.countToggle}>
@@ -324,7 +385,9 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
               <button
                 key={n}
                 type="button"
-                className={`${styles.countBtn} ${shown === n ? styles.countActive : ""}`}
+                className={`${styles.countBtn} ${
+                  shown === n ? styles.countActive : ""
+                }`}
                 onClick={() => tryShown(n)}
               >
                 {n === 99 ? "All" : `${n}×${n}`}
@@ -332,153 +395,148 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
             ))}
           </div>
         </div>
-      </div>
 
-      <div className={styles.searchRow}>
-        <input
-          type="search"
-          className={styles.search}
-          placeholder={`🔎 Search ${yMarket.league} (down)…`}
-          value={qy}
-          onChange={(e) => setQy(e.target.value)}
-        />
-        <input
-          type="search"
-          className={styles.search}
-          placeholder={`🔎 Search ${xMarket.league} (across)…`}
-          value={qx}
-          onChange={(e) => setQx(e.target.value)}
-        />
-      </div>
-
-      <div className={styles.pinRow}>
-        <span className={styles.pinLabel}>Extra legs</span>
-        {pins.map((l) => (
-          <span key={l.id} className={styles.pinChip}>
-            <span className={styles.pinLeague}>{l.league}</span>
-            {l.displayName ?? l.name}
-            <button
-              type="button"
-              aria-label={`Remove ${l.name}`}
-              onClick={() =>
-                setPins((p) => p.filter((x) => x.id !== l.id))
-              }
-            >
-              ×
-            </button>
-          </span>
-        ))}
-        {pins.length < 2 && pinnableMarkets.length > 0 ? (
-          <PinPicker
-            markets={pinnableMarkets}
-            onAdd={(leg) => setPins((p) => [...p, leg])}
+        <div className={styles.searchRow}>
+          <input
+            type="search"
+            className={styles.search}
+            placeholder={`🔎 Search ${yMarket.league} (down)…`}
+            value={qy}
+            onChange={(e) => setQy(e.target.value)}
           />
-        ) : pins.length === 0 ? (
-          <span className={styles.pinHint}>
-            add a 3rd / 4th team to fold into every box
-          </span>
-        ) : null}
-      </div>
+          <input
+            type="search"
+            className={styles.search}
+            placeholder={`🔎 Search ${xMarket.league} (across)…`}
+            value={qx}
+            onChange={(e) => setQx(e.target.value)}
+          />
+        </div>
 
-      <p className={styles.legend}>
-        Greener cells are <strong>more likely to hit</strong>. Pick a row and a
-        column (or tap any cell) to lock a combo — 🔥 marks the safest pairing.
-        {pins.length > 0 && (
-          <strong className={styles.legendPins}>
-            {" "}
-            Every box now includes your {pins.length} pinned leg
-            {pins.length > 1 ? "s" : ""}.
-          </strong>
-        )}
-      </p>
+        <div className={styles.pinRow}>
+          <span className={styles.pinLabel}>Extra legs</span>
+          {pins.map((l) => (
+            <span key={l.id} className={styles.pinChip}>
+              <span className={styles.pinLeague}>{l.league}</span>
+              {l.displayName ?? l.name}
+              <button
+                type="button"
+                aria-label={`Remove ${l.name}`}
+                onClick={() => setPins((p) => p.filter((x) => x.id !== l.id))}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+          {pins.length < 2 && pinnableMarkets.length > 0 ? (
+            <PinPicker
+              markets={pinnableMarkets}
+              onAdd={(leg) => setPins((p) => [...p, leg])}
+            />
+          ) : pins.length === 0 ? (
+            <span className={styles.pinHint}>
+              add a 3rd / 4th team to fold into every box
+            </span>
+          ) : null}
+        </div>
+      </details>
 
       {yOuts.length === 0 || xOuts.length === 0 ? (
         <p className={styles.note}>No teams match your search.</p>
       ) : (
-      <div className={styles.scroll}>
-        <div
-          className={styles.grid}
-          style={{ ["--cols" as string]: xOuts.length }}
-        >
-          {/* Corner */}
-          <div className={styles.corner}>
-            <span className={styles.cornerY}>↓ {yMarket.league}</span>
-            <span className={styles.cornerX}>→ {xMarket.league}</span>
+        <div className={styles.scroll}>
+          <div
+            className={styles.grid}
+            style={{ ["--cols" as string]: xOuts.length }}
+          >
+            {/* Corner */}
+            <div className={styles.corner}>
+              <span className={styles.cornerY}>↓ {yMarket.league}</span>
+              <span className={styles.cornerX}>→ {xMarket.league}</span>
+            </div>
+
+            {/* Column headers */}
+            {xOuts.map((x) => {
+              const active = sel.x === x.name;
+              return (
+                <button
+                  key={x.name}
+                  type="button"
+                  className={`${styles.colHead} ${
+                    active ? styles.headActive : ""
+                  }`}
+                  onClick={() =>
+                    setSel((s) => ({ ...s, x: s.x === x.name ? null : x.name }))
+                  }
+                >
+                  <Avatar o={x} league={xMarket.league} />
+                  <span className={styles.headName}>
+                    {x.displayName ?? x.name}
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* Rows */}
+            {yOuts.map((y) => (
+              <Row key={y.name}>
+                <button
+                  type="button"
+                  className={`${styles.rowHead} ${
+                    sel.y === y.name ? styles.headActive : ""
+                  }`}
+                  onClick={() =>
+                    setSel((s) => ({ ...s, y: s.y === y.name ? null : y.name }))
+                  }
+                >
+                  <Avatar o={y} league={yMarket.league} />
+                  <span className={styles.headName}>
+                    {y.displayName ?? y.name}
+                  </span>
+                </button>
+
+                {xOuts.map((x) => {
+                  const dec =
+                    americanToDecimal(y.price) *
+                    americanToDecimal(x.price) *
+                    pinsDecimal;
+                  const am = decimalToAmerican(dec);
+                  const isSel = sel.y === y.name && sel.x === x.name;
+                  const isHot = `${y.name}|${x.name}` === hotKey;
+                  const crossHi = sel.y === y.name || sel.x === x.name;
+                  return (
+                    <button
+                      key={x.name}
+                      type="button"
+                      className={`${styles.cell} ${
+                        isSel ? styles.cellSel : ""
+                      } ${crossHi ? styles.cellCross : ""}`}
+                      style={{
+                        ["--heat" as string]: `rgba(52, 211, 153, ${heatFor(
+                          y,
+                          x,
+                        )})`,
+                      }}
+                      onClick={() => setSel({ y: y.name, x: x.name })}
+                    >
+                      <span className={styles.cellOdds}>
+                        {formatAmerican(am)}
+                      </span>
+                      <span className={styles.cellPay}>
+                        ${payoutFor(am).toLocaleString()}
+                      </span>
+                      {isHot && <span className={styles.hot}>🔥</span>}
+                    </button>
+                  );
+                })}
+              </Row>
+            ))}
           </div>
-
-          {/* Column headers */}
-          {xOuts.map((x) => {
-            const active = sel.x === x.name;
-            return (
-              <button
-                key={x.name}
-                type="button"
-                className={`${styles.colHead} ${active ? styles.headActive : ""}`}
-                onClick={() =>
-                  setSel((s) => ({ ...s, x: s.x === x.name ? null : x.name }))
-                }
-              >
-                <Avatar o={x} league={xMarket.league} />
-                <span className={styles.headName}>
-                  {x.displayName ?? x.name}
-                </span>
-              </button>
-            );
-          })}
-
-          {/* Rows */}
-          {yOuts.map((y) => (
-            <Row key={y.name}>
-              <button
-                type="button"
-                className={`${styles.rowHead} ${sel.y === y.name ? styles.headActive : ""}`}
-                onClick={() =>
-                  setSel((s) => ({ ...s, y: s.y === y.name ? null : y.name }))
-                }
-              >
-                <Avatar o={y} league={yMarket.league} />
-                <span className={styles.headName}>
-                  {y.displayName ?? y.name}
-                </span>
-              </button>
-
-              {xOuts.map((x) => {
-                const dec =
-                  americanToDecimal(y.price) *
-                  americanToDecimal(x.price) *
-                  pinsDecimal;
-                const am = decimalToAmerican(dec);
-                const isSel = sel.y === y.name && sel.x === x.name;
-                const isHot = `${y.name}|${x.name}` === hotKey;
-                const crossHi = sel.y === y.name || sel.x === x.name;
-                return (
-                  <button
-                    key={x.name}
-                    type="button"
-                    className={`${styles.cell} ${isSel ? styles.cellSel : ""} ${
-                      crossHi ? styles.cellCross : ""
-                    }`}
-                    style={{
-                      ["--heat" as string]: `rgba(52, 211, 153, ${heatFor(y, x)})`,
-                    }}
-                    onClick={() => setSel({ y: y.name, x: x.name })}
-                  >
-                    <span className={styles.cellOdds}>{formatAmerican(am)}</span>
-                    <span className={styles.cellPay}>
-                      ${payoutFor(am)}
-                    </span>
-                    {isHot && <span className={styles.hot}>🔥</span>}
-                  </button>
-                );
-              })}
-            </Row>
-          ))}
         </div>
-      </div>
       )}
 
       {bothSelected && selectedY && selectedX && (
-        <div className={styles.detail}>
+        <div className={styles.detail} ref={detailRef}>
           <button
             type="button"
             className={styles.close}
@@ -492,8 +550,9 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
             const legs = [
               ...pins
                 .map(resolvePin)
-                .filter((v): v is { market: FuturesMarket; o: FuturesOutcome } =>
-                  Boolean(v),
+                .filter(
+                  (v): v is { market: FuturesMarket; o: FuturesOutcome } =>
+                    Boolean(v),
                 ),
               { market: yMarket, o: selectedY },
               { market: xMarket, o: selectedX },
@@ -513,14 +572,14 @@ export default function ParlayMatrix({ markets }: { markets: FuturesMarket[] }) 
 
                 <div className={styles.detailStats}>
                   <div>
-                    <span className={styles.dLabel}>
-                      {legCount}-leg odds
-                    </span>
+                    <span className={styles.dLabel}>{legCount}-leg odds</span>
                     <strong>{formatAmerican(comboAmerican)}</strong>
                   </div>
                   <div>
                     <span className={styles.dLabel}>$10 returns</span>
-                    <strong>{formatCurrency(payoutFor(comboAmerican))}</strong>
+                    <strong>
+                      ${payoutFor(comboAmerican).toLocaleString()}
+                    </strong>
                   </div>
                   <div>
                     <span className={styles.dLabel}>All win chance</span>

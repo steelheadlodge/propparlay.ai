@@ -43,7 +43,9 @@ export default function FuturesSlip() {
 
   const shareText = useMemo(() => {
     const names = legs.map((l) => l.displayName ?? l.name).join(" + ");
-    return `Built a cross-sport futures parlay: ${names} at ${formatAmerican(american)} on PropParlay`;
+    return `Built a cross-sport futures parlay: ${names} at ${formatAmerican(
+      american,
+    )} on PropParlay`;
   }, [legs, american]);
 
   const onShare = async () => {
@@ -83,7 +85,11 @@ export default function FuturesSlip() {
         share?: (data: ShareData) => Promise<void>;
       };
       if (nav.canShare && nav.canShare({ files: [file] }) && nav.share) {
-        await nav.share({ files: [file], title: "PropParlay.ai", text: shareText });
+        await nav.share({
+          files: [file],
+          title: "PropParlay.ai",
+          text: shareText,
+        });
       } else {
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
@@ -96,6 +102,9 @@ export default function FuturesSlip() {
       flashToast("Couldn't make card");
     }
   };
+
+  // An empty slip only covers the grid; it appears once a leg is added.
+  if (legs.length === 0) return null;
 
   return (
     <aside className={`${styles.slip} ${open ? "" : styles.collapsed}`}>
@@ -117,113 +126,112 @@ export default function FuturesSlip() {
 
       {open && (
         <div className={styles.body}>
-          {legs.length === 0 ? (
-            <p className={styles.empty}>
-              Tap contenders above — World Series, Super Bowl and more — to build
-              a cross-sport title parlay.
-            </p>
-          ) : (
-            <>
-              <ul className={styles.legs}>
-                {legs.map((l) => (
-                  <li key={l.id} className={styles.leg}>
-                    {l.logo ? (
-                      <img
-                        src={l.logo}
-                        alt=""
-                        className={`${styles.legLogo} ${
-                          needsLogoOutline(l.league, l.abbr)
-                            ? styles.legLogoOutline
-                            : ""
-                        }`}
-                      />
-                    ) : (
-                      <span className={styles.legLogoFallback}>
-                        {(l.abbr ?? l.name).slice(0, 3)}
-                      </span>
-                    )}
-                    <span className={styles.legText}>
-                      <span className={styles.legName}>
-                        {l.displayName ?? l.name}
-                      </span>
-                      <span className={styles.legMarket}>
-                        {l.league} · {l.marketTitle}
-                      </span>
-                    </span>
-                    <span className={styles.legOdds}>
-                      {formatAmerican(l.price)}
-                    </span>
-                    <button
-                      type="button"
-                      className={styles.legRemove}
-                      onClick={() => remove(l.id)}
-                      aria-label={`Remove ${l.name}`}
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-
-              {conflict && (
-                <p className={styles.conflict}>
-                  Heads up — two picks in the same market can't both win.
-                </p>
-              )}
-
-              <div className={styles.stakeRow}>
-                <label className={styles.stakeLabel}>Stake</label>
-                <div className={styles.stakeInput}>
-                  <span>$</span>
-                  <input
-                    type="number"
-                    min={1}
-                    value={stake}
-                    onChange={(e) =>
-                      setStake(Math.max(0, Number(e.target.value) || 0))
-                    }
+          <ul className={styles.legs}>
+            {legs.map((l) => (
+              <li key={l.id} className={styles.leg}>
+                {l.logo ? (
+                  <img
+                    src={l.logo}
+                    alt=""
+                    className={`${styles.legLogo} ${
+                      needsLogoOutline(l.league, l.abbr)
+                        ? styles.legLogoOutline
+                        : ""
+                    }`}
                   />
-                </div>
-              </div>
-
-              <div className={styles.summary}>
-                <div className={styles.summaryRow}>
-                  <span>Combined odds</span>
-                  <strong>
-                    {formatAmerican(american)}
-                    <span className={styles.mult}>{decimal.toFixed(1)}×</span>
-                  </strong>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span>Profit</span>
-                  <strong className={styles.profit}>
-                    <AnimatedNumber value={profit} currency />
-                  </strong>
-                </div>
-                <div className={`${styles.summaryRow} ${styles.payoutRow}`}>
-                  <span>Total payout</span>
-                  <strong>
-                    <AnimatedNumber value={payout} currency />
-                  </strong>
-                </div>
-              </div>
-
-              <button type="button" className={styles.sharePrimary} onClick={onShare}>
-                Share parlay
-              </button>
-              <div className={styles.shareRow}>
-                <button type="button" className={styles.saveCard} onClick={onSaveCard}>
-                  Save image card
+                ) : (
+                  <span className={styles.legLogoFallback}>
+                    {(l.abbr ?? l.name).slice(0, 3)}
+                  </span>
+                )}
+                <span className={styles.legText}>
+                  <span className={styles.legName}>
+                    {l.displayName ?? l.name}
+                  </span>
+                  <span className={styles.legMarket}>
+                    {l.league} · {l.marketTitle}
+                  </span>
+                </span>
+                <span className={styles.legOdds}>
+                  {formatAmerican(l.price)}
+                </span>
+                <button
+                  type="button"
+                  className={styles.legRemove}
+                  onClick={() => remove(l.id)}
+                  aria-label={`Remove ${l.name}`}
+                >
+                  ×
                 </button>
-              </div>
+              </li>
+            ))}
+          </ul>
 
-              {toast && <p className={styles.toast}>{toast}</p>}
-
-              <button type="button" className={styles.clear} onClick={clear}>
-                Clear slip
-              </button>
-            </>
+          {conflict && (
+            <p className={styles.conflict}>
+              Heads up — two picks in the same market can't both win.
+            </p>
           )}
+
+          <div className={styles.stakeRow}>
+            <label className={styles.stakeLabel}>Stake</label>
+            <div className={styles.stakeInput}>
+              <span>$</span>
+              <input
+                type="number"
+                min={1}
+                value={stake}
+                onChange={(e) =>
+                  setStake(Math.max(0, Number(e.target.value) || 0))
+                }
+              />
+            </div>
+          </div>
+
+          <div className={styles.summary}>
+            <div className={styles.summaryRow}>
+              <span>Combined odds</span>
+              <strong>
+                {formatAmerican(american)}
+                <span className={styles.mult}>{decimal.toFixed(1)}×</span>
+              </strong>
+            </div>
+            <div className={styles.summaryRow}>
+              <span>Profit</span>
+              <strong className={styles.profit}>
+                <AnimatedNumber value={profit} currency />
+              </strong>
+            </div>
+            <div className={`${styles.summaryRow} ${styles.payoutRow}`}>
+              <span>Total payout</span>
+              <strong>
+                <AnimatedNumber value={payout} currency />
+              </strong>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={styles.sharePrimary}
+            onClick={onShare}
+          >
+            Share parlay
+          </button>
+          <div className={styles.shareRow}>
+            <button
+              type="button"
+              className={styles.saveCard}
+              onClick={onSaveCard}
+            >
+              Save image card
+            </button>
+          </div>
+
+          {toast && <p className={styles.toast}>{toast}</p>}
+
+          <button type="button" className={styles.clear} onClick={clear}>
+            Clear slip
+          </button>
         </div>
       )}
     </aside>

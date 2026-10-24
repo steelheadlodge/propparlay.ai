@@ -18,28 +18,34 @@ export default function Matrix() {
 
   return (
     <Layout
-      title="Cross-sport parlay grid"
-      subtitle="Pick a team down the side and one across the top — the cell where they meet shows the combined odds and payout if you parlay them. Add extra legs to fold a 3rd or 4th team into every box. Greener means more likely to hit."
+      title="The parlay heat map"
+      subtitle="Each square is two teams from different sports. Brighter green means better odds of both winning. Tap any square to see what $10 pays."
     >
-      {pickOfDay && (
-        <PickOfDayBanner pick={pickOfDay} onLoad={() => hydrate(pickOfDay.legs)} />
-      )}
-
       {state.status === "loading" ? (
         <div className={styles.skeleton} />
       ) : state.status === "error" || !state.configured ? (
-        <p className={styles.note}>Live futures are warming up. Check back shortly.</p>
+        <p className={styles.note}>
+          Live futures are warming up. Check back shortly.
+        </p>
       ) : markets.length < 2 ? (
         <p className={styles.note}>
-          The grid needs at least two championship markets. More leagues populate
-          as books open futures for the upcoming seasons.
+          The grid needs at least two championship markets. More leagues
+          populate as books open futures for the upcoming seasons.
         </p>
       ) : (
-        <>
-          <SmartPicks markets={markets} />
-          <ParlayMatrix markets={markets} />
-        </>
+        <ParlayMatrix markets={markets} />
       )}
+
+      {pickOfDay && (
+        <div className={styles.below}>
+          <PickOfDayBanner
+            pick={pickOfDay}
+            onLoad={() => hydrate(pickOfDay.legs)}
+          />
+        </div>
+      )}
+
+      {markets.length >= 2 && <SmartPicks markets={markets} />}
 
       <Link to="/futures" className={styles.crossLink}>
         <span className={styles.crossIcon}>🏆</span>
