@@ -343,7 +343,7 @@ export default function ParlayMatrix({
           className={styles.hotCallout}
           onClick={() => setSel({ y: hotY.name, x: hotX.name })}
         >
-          <span className={styles.hotTag}>🔥 Safest combo</span>
+          <span className={styles.hotTag}>🔥 Most likely combo</span>
           <span className={styles.hotNames}>
             {hotY.displayName ?? hotY.name} + {hotX.displayName ?? hotX.name}
           </span>
@@ -378,7 +378,7 @@ export default function ParlayMatrix({
         )}
       </p>
 
-      <details className={styles.more} open={pins.length > 0 || undefined}>
+      <details className={styles.more}>
         <summary>More options: size, search, 3rd team</summary>
         <div className={styles.picker}>
           <span>Teams</span>

@@ -232,29 +232,46 @@ async function espnFallback(env, reason) {
 // Must match the /api/futures kvSwr key in worker.js (stored as `cache:<key>`).
 const BOARD_CACHE_KEY = "cache:futures:v9";
 
-// Leagues Polymarket hasn't opened yet (e.g. next season's World Series while
-// this one is still being played) keep their last served market rather than
-// vanishing from the grid.
-async function carryForward(env, markets) {
-  let prev = [];
+// A league missing from a refresh keeps its last served market this long
+// (e.g. next season's World Series before Polymarket lists it), then drops.
+const CARRY_MAX_MS = 21 * 24 * 60 * 60 * 1000;
+
+async function previousMarkets(env) {
   try {
     const raw = await env?.WAITLIST?.get(BOARD_CACHE_KEY);
-    prev = raw ? JSON.parse(raw)?.data?.markets ?? [] : [];
+    return raw ? JSON.parse(raw)?.data?.markets ?? [] : [];
   } catch {
-    prev = [];
+    return [];
   }
+}
+
+function carryForward(prev, markets) {
+  const now = Date.now();
   const have = new Set(markets.map((m) => m.key));
-  return [...markets, ...prev.filter((m) => m?.key && !have.has(m.key))];
+  const carried = prev
+    .filter((m) => m?.key && !have.has(m.key))
+    .map((m) => ({ ...m, carriedSince: m.carriedSince ?? now }))
+    .filter((m) => now - m.carriedSince < CARRY_MAX_MS);
+  return [...markets, ...carried];
 }
 
 // Polymarket is free and unmetered, so it leads; Odds API credits are kept for
-// the props slate and only spent here if Polymarket can't fill the grid.
+// the props slate.
 export async function getFutures(env) {
-  const poly = await getPolymarketFutures().catch(() => []);
+  const [poly, prev] = await Promise.all([
+    getPolymarketFutures().catch(() => []),
+    previousMarkets(env),
+  ]);
   if (poly.length >= MIN_MARKETS) {
-    const markets = await carryForward(env, poly);
+    const markets = carryForward(prev, poly);
     await attachMovement(env, markets).catch(() => {});
     return { configured: true, markets, quota: getOddsQuota(), source: "polymarket" };
+  }
+  // Polymarket hiccup with a board already cached: return nothing so kvSwr
+  // keeps serving the cached board and retries later, instead of spending a
+  // dozen Odds API credits on every 3-hour refresh.
+  if (prev.length >= MIN_MARKETS) {
+    return { configured: true, markets: [], source: "polymarket", reason: "unavailable" };
   }
 
   const apiKey = env.ODDS_API_KEY;

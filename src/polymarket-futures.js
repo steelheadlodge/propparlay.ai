@@ -12,7 +12,7 @@ const GAMMA = "https://gamma-api.polymarket.com";
 // events are found by search + title pattern rather than a fixed slug.
 const CHAMPION_MARKETS = [
   { league: "NFL", key: "americanfootball_nfl_super_bowl_winner", title: "Super Bowl Winner", q: "pro football champion", match: /^Pro Football: \d{4} Champion$/i },
-  { league: "MLB", key: "baseball_mlb_world_series_winner", title: "World Series Winner", q: "world series champion", match: /^MLB World Series Champion \d{4}$/i },
+  { league: "MLB", key: "baseball_mlb_world_series_winner", title: "World Series Winner", q: "world series champion", match: /^MLB(:)? (World Series Champion \d{4}|\d{4} (World Series )?Champion)$/i },
   { league: "NBA", key: "basketball_nba_championship_winner", title: "Championship Winner", q: "nba champion", match: /^NBA: \d{4} Champion$/i },
   { league: "NHL", key: "icehockey_nhl_championship_winner", title: "Stanley Cup Winner", q: "nhl champion", match: /^NHL: \d{4} Champion$/i },
   { league: "NCAAF", key: "americanfootball_ncaaf_championship_winner", title: "Championship Winner", q: "ncaa football national champion", match: /^NCAA Football: \d{4} National Champion$/i },

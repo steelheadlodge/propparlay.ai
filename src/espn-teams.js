@@ -56,13 +56,15 @@ async function fetchJson(url, ms) {
 }
 
 // Edge-cached JSON fetch for the free ESPN endpoints (teams, rosters).
-export async function cachedFetchJson(cacheKey, ttlSeconds, url, ms) {
+// `slim` trims the payload before it's cached so large feeds parse cheaply.
+export async function cachedFetchJson(cacheKey, ttlSeconds, url, ms, slim) {
   const cache = caches.default;
   const req = new Request(`https://cache.propparlay.ai/${cacheKey}`);
   const hit = await cache.match(req);
   if (hit) return await hit.json();
-  const data = await fetchJson(url, ms);
-  if (data == null) return null;
+  const raw = await fetchJson(url, ms);
+  if (raw == null) return null;
+  const data = slim ? slim(raw) : raw;
   const res = new Response(JSON.stringify(data), {
     headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${ttlSeconds}` },
   });
@@ -74,15 +76,28 @@ export async function cachedFetchJson(cacheKey, ttlSeconds, url, ms) {
 export async function getLeagueTeams(league) {
   const path = ESPN_PATH[league];
   if (!path) return null;
-  const json = await cachedFetchJson(
-    `espn:teams:${league.replace(/\s+/g, "_")}:v2`,
+  const teams = await cachedFetchJson(
+    `espn:teams:${league.replace(/\s+/g, "_")}:v3`,
     24 * 60 * 60,
-    // College football lists ~760 programs; a lower limit silently drops
-    // contenders like Oregon and Miami.
+    // College football lists ~760 programs (~1.9 MB); a lower limit silently
+    // drops contenders like Oregon and Miami.
     `https://site.api.espn.com/apis/site/v2/sports/${path}/teams?limit=1000`,
     5000,
+    (json) =>
+      (json?.sports?.[0]?.leagues?.[0]?.teams ?? []).map(({ team = {} }) => ({
+        team: {
+          id: team.id,
+          abbreviation: team.abbreviation,
+          displayName: team.displayName,
+          shortDisplayName: team.shortDisplayName,
+          name: team.name,
+          nickname: team.nickname,
+          location: team.location,
+          logos: team.logos?.[0]?.href ? [{ href: team.logos[0].href }] : [],
+        },
+      })),
   );
-  const teams = json?.sports?.[0]?.leagues?.[0]?.teams ?? [];
+  if (!Array.isArray(teams)) return { byName: new Map(), byId: new Map(), abbrLogo: new Map() };
   const byName = new Map();
   const byId = new Map();
   const abbrLogo = new Map();
