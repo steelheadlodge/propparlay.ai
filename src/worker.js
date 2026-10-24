@@ -32,10 +32,6 @@ async function cachedJson(cacheKey, ttlSeconds, producer) {
   return data;
 }
 
-// If remaining Odds API credits drop below this, background refreshes are
-// skipped and we keep serving the last good payload until the monthly reset.
-const ODDS_LOW_CREDITS = 25;
-
 // KV-backed cache with stale-while-revalidate. Unlike the edge Cache API
 // (per-datacenter + evictable), KV is global and durable, so an expensive
 // upstream fetch (e.g. the multi-market futures board) happens ~once per
@@ -48,7 +44,8 @@ const ODDS_LOW_CREDITS = 25;
 //   - cold miss  -> block once to produce, then cache
 //
 // `isValid` guards against caching a degraded payload (e.g. an empty board from
-// an upstream hiccup) over good stale data.
+// an upstream hiccup) over good stale data. Entries never expire: a stale board
+// beats an empty one, and producers handle their own credit limits.
 async function kvSwr(env, ctx, key, freshSeconds, producer, isValid = () => true) {
   const kv = env.WAITLIST;
   if (!kv) return producer(); // no KV binding -> just produce
@@ -79,9 +76,7 @@ async function kvSwr(env, ctx, key, freshSeconds, producer, isValid = () => true
   const data = await producer();
   if (isValid(data)) {
     try {
-      await kv.put(k, JSON.stringify({ ts: now, data }), {
-        expirationTtl: Math.max(60, freshSeconds * 3),
-      });
+      await kv.put(k, JSON.stringify({ ts: now, data }));
     } catch {
       /* best-effort */
     }
@@ -90,11 +85,6 @@ async function kvSwr(env, ctx, key, freshSeconds, producer, isValid = () => true
 }
 
 async function kvRevalidate(kv, k, freshSeconds, producer, isValid) {
-  // Credit circuit breaker: when credits run low, stop refreshing and keep the
-  // last good payload until the quota resets.
-  const { remaining } = getOddsQuota();
-  if (typeof remaining === "number" && remaining < ODDS_LOW_CREDITS) return;
-
   // Soft lock so a burst across colos triggers only one refresh.
   const lockKey = `${k}:lock`;
   try {
@@ -107,9 +97,7 @@ async function kvRevalidate(kv, k, freshSeconds, producer, isValid) {
   try {
     const data = await producer();
     if (isValid(data)) {
-      await kv.put(k, JSON.stringify({ ts: Date.now(), data }), {
-        expirationTtl: Math.max(60, freshSeconds * 3),
-      });
+      await kv.put(k, JSON.stringify({ ts: Date.now(), data }));
     }
   } catch {
     /* keep serving stale on failure */

@@ -70,7 +70,7 @@ export async function cachedFetchJson(cacheKey, ttlSeconds, url, ms) {
   return data;
 }
 
-// league -> { byName: Map(normName -> {abbr, logo}), abbrLogo: Map }
+// league -> { byName: Map(normName -> {abbr, logo, nick}), byId: Map(espnId -> team), abbrLogo: Map }
 export async function getLeagueTeams(league) {
   const path = ESPN_PATH[league];
   if (!path) return null;
@@ -82,6 +82,7 @@ export async function getLeagueTeams(league) {
   );
   const teams = json?.sports?.[0]?.leagues?.[0]?.teams ?? [];
   const byName = new Map();
+  const byId = new Map();
   const abbrLogo = new Map();
   for (const t of teams) {
     const team = t.team ?? {};
@@ -91,13 +92,21 @@ export async function getLeagueTeams(league) {
     const nick = team.name ?? team.shortDisplayName ?? team.nickname ?? null;
     if (!abbr) continue;
     abbrLogo.set(abbr, logo);
+    if (team.id != null) {
+      byId.set(String(team.id), {
+        abbr,
+        logo,
+        nick,
+        fullName: team.displayName ?? team.shortDisplayName ?? nick ?? abbr,
+      });
+    }
     // Index by every name variant so we can match a variety of feed labels
     // (e.g. "Kansas City Chiefs", "Chiefs", "KC").
     for (const n of [team.displayName, team.shortDisplayName, team.name, team.nickname, team.location, abbr]) {
       if (n) byName.set(normName(n), { abbr, logo, nick });
     }
   }
-  return { byName, abbrLogo };
+  return { byName, byId, abbrLogo };
 }
 
 // teamAbbr -> Map(normName -> headshotUrl)

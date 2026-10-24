@@ -8,6 +8,7 @@
 
 import { ODDS_BASE, oddsFetch, getOddsQuota } from "./odds.js";
 import { normName, getLeagueTeams } from "./espn-teams.js";
+import { getEspnFutures } from "./espn-futures.js";
 
 // Map an Odds API sport key prefix to our league label. Order matters: more
 // specific soccer prefixes are matched before any generic ones.
@@ -214,15 +215,32 @@ async function attachMovement(env, markets) {
   }
 }
 
+// The grid needs two markets; below that the Odds API board is treated as a
+// failure and the free ESPN champions board is served instead.
+const MIN_MARKETS = 2;
+
+async function espnFallback(env, reason) {
+  const markets = await getEspnFutures().catch(() => []);
+  await attachMovement(env, markets).catch(() => {});
+  return { configured: true, markets, quota: getOddsQuota(), source: "espn", reason };
+}
+
 export async function getFutures(env) {
   const apiKey = env.ODDS_API_KEY;
-  if (!apiKey) return { configured: false, markets: [], quota: null };
+  if (!apiKey) return espnFallback(env, "no-key");
 
   let catalog;
   try {
     catalog = await fetchCatalog(apiKey);
   } catch (err) {
-    return { configured: true, markets: [], quota: getOddsQuota(), error: "catalog" };
+    return espnFallback(env, "catalog");
+  }
+
+  // The catalog call is free and reports remaining credits; don't spend 26
+  // doomed requests once the month's quota is gone.
+  const { remaining } = getOddsQuota();
+  if (typeof remaining === "number" && remaining < MAX_MARKETS) {
+    return espnFallback(env, "quota");
   }
 
   // Order leagues so the most timely / marquee futures surface first, and cap
@@ -280,7 +298,9 @@ export async function getFutures(env) {
     }
   }
 
+  if (markets.length < MIN_MARKETS) return espnFallback(env, "empty");
+
   await attachMovement(env, markets).catch(() => {});
 
-  return { configured: true, markets, quota: getOddsQuota() };
+  return { configured: true, markets, quota: getOddsQuota(), source: "odds-api" };
 }
