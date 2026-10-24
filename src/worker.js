@@ -299,7 +299,7 @@ function shareLanding(url) {
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(desc)}">
 <meta name="twitter:image" content="${escapeHtml(ogImg)}">
-<meta name="apple-itunes-app" content="app-id=6782497602, app-argument=${escapeHtml(url.origin + appUrl)}">
+<meta name="apple-itunes-app" content="app-id=6782497602, affiliate-data=pt=128930091&amp;ct=share&amp;mt=8, app-argument=${escapeHtml(url.origin + appUrl)}">
 <link rel="canonical" href="${escapeHtml(url.origin + appUrl)}">
 <style>
   html,body{margin:0;height:100%;background:#0a0f1f;color:#e2e8f0;font-family:Inter,system-ui,sans-serif}
@@ -318,7 +318,7 @@ function shareLanding(url) {
   <div class="odds">${escapeHtml(formatAmerican(american))}</div>
   <div style="color:#94a3b8">$10 returns $${payout}</div>
   <a class="cta" href="${escapeHtml(appUrl)}">Open this parlay →</a>
-  <a class="cta secondary" href="https://apps.apple.com/us/app/propparlay/id6782497602" style="margin-top:.35rem;background:transparent;border:1px solid rgba(129,140,248,.45);color:#c7d2fe">Get the app</a>
+  <a class="cta secondary" href="https://apps.apple.com/us/app/propparlay/id6782497602?pt=128930091&amp;ct=share&amp;mt=8" style="margin-top:.35rem;background:transparent;border:1px solid rgba(129,140,248,.45);color:#c7d2fe">Get the app</a>
 </div>
 <script>
 // iPhone/iPad visitors keep this page so the App Store banner and button get a chance.
