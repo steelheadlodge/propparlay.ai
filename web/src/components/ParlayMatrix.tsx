@@ -68,7 +68,9 @@ function outcomeInsights(
   list.push({
     icon: "🏦",
     text:
-      o.books === 1
+      o.book === "Polymarket"
+        ? "Priced by Polymarket's prediction market — sportsbooks usually pay a little less."
+        : o.books === 1
         ? `Priced at ${o.book || "the sportsbook"}.`
         : `Priced across ${o.books} books — ${
             o.books >= 4 ? "strong" : "limited"

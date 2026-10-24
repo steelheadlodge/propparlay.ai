@@ -1,14 +1,15 @@
 // Futures board — championship / conference / division / win-total / award
-// markets across NFL, MLB, NBA, NHL. Markets are discovered dynamically from
-// The Odds API "sports" catalog (free) so the board adapts to whatever each
-// book has posted for the current season.
+// markets across NFL, MLB, NBA, NHL. Polymarket's champion markets (free) lead;
+// otherwise markets are discovered dynamically from The Odds API "sports"
+// catalog so the board adapts to whatever each book has posted for the season.
 //
-// Quota note: each market costs 1 Odds API credit. Futures move slowly, so the
-// /api/futures route caches for 12h — a handful of credits per day.
+// Quota note: each Odds API market costs 1 credit, so that path only runs when
+// Polymarket can't fill the grid.
 
 import { ODDS_BASE, oddsFetch, getOddsQuota } from "./odds.js";
 import { normName, getLeagueTeams } from "./espn-teams.js";
 import { getEspnFutures } from "./espn-futures.js";
+import { getPolymarketFutures } from "./polymarket-futures.js";
 
 // Map an Odds API sport key prefix to our league label. Order matters: more
 // specific soccer prefixes are matched before any generic ones.
@@ -183,7 +184,10 @@ async function attachMovement(env, markets) {
 
   for (const m of markets) {
     for (const o of m.outcomes) {
-      const key = `${m.key}|${o.name}`;
+      // Single-source prices (Polymarket, ESPN/DraftKings) get their own
+      // baseline so switching sources doesn't read as line movement.
+      const key =
+        o.books === 1 ? `${m.key}|${o.book}|${o.name}` : `${m.key}|${o.name}`;
       const base = opens[key];
 
       if (!base || now - base.ts > OPEN_MAX_AGE_MS) {
@@ -225,7 +229,34 @@ async function espnFallback(env, reason) {
   return { configured: true, markets, quota: getOddsQuota(), source: "espn", reason };
 }
 
+// Must match the /api/futures kvSwr key in worker.js (stored as `cache:<key>`).
+const BOARD_CACHE_KEY = "cache:futures:v9";
+
+// Leagues Polymarket hasn't opened yet (e.g. next season's World Series while
+// this one is still being played) keep their last served market rather than
+// vanishing from the grid.
+async function carryForward(env, markets) {
+  let prev = [];
+  try {
+    const raw = await env?.WAITLIST?.get(BOARD_CACHE_KEY);
+    prev = raw ? JSON.parse(raw)?.data?.markets ?? [] : [];
+  } catch {
+    prev = [];
+  }
+  const have = new Set(markets.map((m) => m.key));
+  return [...markets, ...prev.filter((m) => m?.key && !have.has(m.key))];
+}
+
+// Polymarket is free and unmetered, so it leads; Odds API credits are kept for
+// the props slate and only spent here if Polymarket can't fill the grid.
 export async function getFutures(env) {
+  const poly = await getPolymarketFutures().catch(() => []);
+  if (poly.length >= MIN_MARKETS) {
+    const markets = await carryForward(env, poly);
+    await attachMovement(env, markets).catch(() => {});
+    return { configured: true, markets, quota: getOddsQuota(), source: "polymarket" };
+  }
+
   const apiKey = env.ODDS_API_KEY;
   if (!apiKey) return espnFallback(env, "no-key");
 

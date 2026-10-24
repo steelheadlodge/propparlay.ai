@@ -75,9 +75,11 @@ export async function getLeagueTeams(league) {
   const path = ESPN_PATH[league];
   if (!path) return null;
   const json = await cachedFetchJson(
-    `espn:teams:${league.replace(/\s+/g, "_")}:v1`,
+    `espn:teams:${league.replace(/\s+/g, "_")}:v2`,
     24 * 60 * 60,
-    `https://site.api.espn.com/apis/site/v2/sports/${path}/teams?limit=300`,
+    // College football lists ~760 programs; a lower limit silently drops
+    // contenders like Oregon and Miami.
+    `https://site.api.espn.com/apis/site/v2/sports/${path}/teams?limit=1000`,
     5000,
   );
   const teams = json?.sports?.[0]?.leagues?.[0]?.teams ?? [];
@@ -92,18 +94,17 @@ export async function getLeagueTeams(league) {
     const nick = team.name ?? team.shortDisplayName ?? team.nickname ?? null;
     if (!abbr) continue;
     abbrLogo.set(abbr, logo);
-    if (team.id != null) {
-      byId.set(String(team.id), {
-        abbr,
-        logo,
-        nick,
-        fullName: team.displayName ?? team.shortDisplayName ?? nick ?? abbr,
-      });
-    }
+    const entry = {
+      abbr,
+      logo,
+      nick,
+      fullName: team.displayName ?? team.shortDisplayName ?? nick ?? abbr,
+    };
+    if (team.id != null) byId.set(String(team.id), entry);
     // Index by every name variant so we can match a variety of feed labels
     // (e.g. "Kansas City Chiefs", "Chiefs", "KC").
     for (const n of [team.displayName, team.shortDisplayName, team.name, team.nickname, team.location, abbr]) {
-      if (n) byName.set(normName(n), { abbr, logo, nick });
+      if (n) byName.set(normName(n), entry);
     }
   }
   return { byName, byId, abbrLogo };

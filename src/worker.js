@@ -529,7 +529,7 @@ export default {
           env,
           ctx,
           "futures:v9",
-          24 * 60 * 60,
+          3 * 60 * 60,
           () => getFutures(env),
           (d) => Array.isArray(d?.markets) && d.markets.length > 0,
         );
