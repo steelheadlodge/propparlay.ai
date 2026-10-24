@@ -298,6 +298,7 @@ function shareLanding(url) {
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(desc)}">
 <meta name="twitter:image" content="${escapeHtml(ogImg)}">
+<meta name="apple-itunes-app" content="app-id=6782497602, app-argument=${escapeHtml(url.origin + appUrl)}">
 <link rel="canonical" href="${escapeHtml(url.origin + appUrl)}">
 <style>
   html,body{margin:0;height:100%;background:#0a0f1f;color:#e2e8f0;font-family:Inter,system-ui,sans-serif}
@@ -318,7 +319,10 @@ function shareLanding(url) {
   <a class="cta" href="${escapeHtml(appUrl)}">Open this parlay →</a>
   <a class="cta secondary" href="https://apps.apple.com/us/app/propparlay/id6782497602" style="margin-top:.35rem;background:transparent;border:1px solid rgba(129,140,248,.45);color:#c7d2fe">Get the app</a>
 </div>
-<script>setTimeout(function(){location.replace(${JSON.stringify(appUrl)})},1200);</script>
+<script>
+// iPhone/iPad visitors keep this page so the App Store banner and button get a chance.
+if(!/iPhone|iPad|iPod/.test(navigator.userAgent)){setTimeout(function(){location.replace(${JSON.stringify(appUrl)})},1200);}
+</script>
 </body>
 </html>`;
 
